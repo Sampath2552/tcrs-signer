@@ -1,0 +1,40 @@
+{
+  "name": "tcrs-signer",
+  "version": "1.0.0",
+  "main": "./electron/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "restart": "cd app && npm run build && cd .. && npm run start",
+    "build": "electron-packager . TCRS --platform=win32 --arch=x64 --icon=./tcrs_logo.ico --out=dist --overwrite"
+  },
+  "keywords": [],
+  "author": "CRS",
+  "license": "ISC",
+  "description": "TCRS Signing Application",
+  "devDependencies": {
+    "electron": "^33.0.1",
+    "electron-packager": "^17.1.2",
+    "electron-prebuilt-compile": "8.2.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "socket.io": "^4.8.0",
+    "ws": "^8.18.0"
+  },
+  "config": {
+    "forge": {
+      "makers": [
+        {
+          "name": "@electron-forge/maker-nsis",
+          "config": {
+            "oneClick": false,
+            "perMachine": true,
+            "allowToChangeInstallationDirectory": true
+          }
+        }
+      ]
+    }
+  }
+}

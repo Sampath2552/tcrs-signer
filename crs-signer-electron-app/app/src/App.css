@@ -1,0 +1,9 @@
+body
+{
+  background-image: url("wavy-lines.svg");
+  background: #000000;
+  background-size: cover ;
+  color: aliceblue;
+  align-items: center;
+  
+}
