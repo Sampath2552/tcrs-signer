@@ -18,5 +18,7 @@ contextBridge.exposeInMainWorld('signer',{
     changeConfig: (details)=> ipcRenderer.send('change-config',details),
     configureNewToken: (newTokenDetails) => ipcRenderer.send('configure-newtoken',newTokenDetails),
     checkToken: (credentials) => ipcRenderer.send('check-token',credentials) ,
-    openFilePicker:()=>ipcRenderer.send('open-filepicker')
+    openFilePicker:()=>ipcRenderer.send('open-filepicker'),
+    getCertificates:() => ipcRenderer.send('get-certificates'),
+    openCrs:() => ipcRenderer.send('open-crs')
 })

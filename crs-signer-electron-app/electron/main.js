@@ -1,5 +1,5 @@
-// require('events').EventEmitter.defaultMaxListeners = 0
-const {app,BrowserWindow, globalShortcut,ipcMain} = require("electron");
+
+const {app,BrowserWindow, globalShortcut,ipcMain,shell} = require("electron");
 const url = require("url")
 const path = require("path");
 const os = require("os")
@@ -16,7 +16,9 @@ const socketIo = require('socket.io');
 const { dialog } = require("electron");
 const {createPdf} = require("./pdfwriter")
 const {EventEmitter} = require("events");
-
+const { json } = require("stream/consumers");
+const { report } = require("process");
+const {signingStatusMessage,certificateExtractionMessages} = require("./messages")
 const emitter = new EventEmitter()
 const expressApp = express()
 expressApp.use(cors());
@@ -24,45 +26,32 @@ expressApp.use(express.json({ limit: '50mb'}));
 expressApp.use(  express.urlencoded({ limit: '50mb',extended: true }));
 const server = http.createServer(expressApp)
 
-// emitter.setMaxListeners(100)
-// const io = socketIo(server, {
-//   cors: {
-//       origin: "http://localhost:5173", // Replace with your client's origin
-//       methods: ["GET", "POST"],
-     
-//   }})
 let userDir = os.homedir().split("\\");
 let userCompleteId = userDir[userDir.length - 1]
 let userId = userCompleteId.replace("tcs",'').replace("v",'')
 let fileName=''
 let window
-const signingStatusMessage={
-  "111":{status:111,header:"Success",description:"File Signed Succesfully"},
-  "100":{status:100,header:"Invalid Password",description:"The password you have entered is invalid.Please try again"},
-  "110":{status:110,header:"Signing Failed ",description:"Signing failed Please try again "},
-  "112":{status:112,header:"Certificate Not yet valid",description:"You are trying to use the certificate even before "},
-  "113":{status:113,header:"Certificate Expired",description:"Your are trying to use an expired certificate"},
-  "114":{status:114,header:"No Certificates",description:"There are no certificates in the token"},
-  "120":{status:120,header:"No Token",description:"Error verifying the Token. Please try again with the appropriate Token"},
-  "130":{status:130,header:"Invalid DLL",description:"Please verify whether you have selected the correct dll. Verify whether the token dll is installed or not."}
-  
-}
+
+let signedReportsList = []
 const io = socketIo(server,{maxHttpBufferSize:"10mb",cors:{
   origin:"*",
 }})
 io.on('connection', (socket) => {
   console.log('A user connected');
-  
-//  window.webContents.send('crs-connected')
   socket.on('userverification',(msg)=>{
     let successObj = {success:false}
     let crsLoggedInUserId = JSON.parse(msg).userId
-    
+    let byPassFlag = JSON.parse(msg).byPassFlag
     if(userId===crsLoggedInUserId)
     {
+
       window.webContents.send('crs-connected')
       successObj = {success:true}
       
+    }
+    else if(byPassFlag)
+    {
+        window.webContents.send('crs-connected')
     }
     else
     { 
@@ -72,18 +61,19 @@ io.on('connection', (socket) => {
     socket.emit('verification-result',JSON.stringify(successObj))
   })
   socket.on('message', (msg) => {
-      console.log('Message received: ' + msg);
+
       initializeSocket()
 
-      
-      // console.log(msg)
       bringToForeground(window)
       const crsLoggedInUserId = JSON.parse(msg).userId
-      if(userId===crsLoggedInUserId)
+      const byPassFlag = JSON.parse(msg).byPassFlag
+      if(userId===crsLoggedInUserId || byPassFlag)
       {
-        setTimeout(()=>{
+
+          fileName = JSON.parse(msg).fileName
           window.webContents.send('render-pdf',JSON.parse(msg))
-        },3000)
+
+
       }
       else
       {
@@ -92,6 +82,38 @@ io.on('connection', (socket) => {
      
     // Broadcast the message to all clients
   });
+  socket.on('multisign',(msg)=>{
+    //console.log(msg)
+      let reportsMsg = JSON.parse(msg)
+      console.log(reportsMsg.reports)
+      let userId = reportsMsg.userId
+      
+      let role = reportsMsg.role
+
+      
+
+      
+      if(reportsMsg.reports!==null && reportsMsg.reports.length>0)
+      
+      {
+        window.webContents.send("show-reportlist",JSON.stringify(reportsMsg.reports))
+        reportsMsg.reports.forEach((report)=>{
+          let objToSend = {
+            userId,
+            role,
+            multiSignFlag:"true",
+            flagForSigning:"1",
+            dllSigningFlag:"false",
+            fileName: report.fileName,
+            data: report.data,
+            alias:"ANIL BABU KAYALORATH",
+            reportId: report.reportId
+          }
+          con.socket.send(JSON.stringify(objToSend))
+        })
+      }
+    //  console.log("Signed Reports List = "+signedReportsList)
+  })
   socket.on('acknowledgement',()=>{
       window.webContents.send("acknowledgement-received")
   })
@@ -109,10 +131,8 @@ const dllPaths=["eTPKCS11.dll","eTPKCS11.dll","IDPrimePKCS11.dll","IDPrimePKCS11
   ]
 const DLL_CONSTANT_PATH = "C:\\Windows\\System32\\"
 
-// expressApp.use(bodyParser.json({limit: "50mb"}));
-// expressApp.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
 
-let con;
+let con = {};
 const initializeSocket = () => {
     let port="2453"
     let protocol ="ws"
@@ -139,16 +159,30 @@ const initializeSocket = () => {
       };
       // Response after sign 
       ws.onmessage = function (e) {
-        console.log("Inside Message")
+        
       
         const socketResult = JSON.parse(e.data)
+
         if(socketResult===null)
         {
           window.webContents.send('show-configuration-status',null)
         }
         else
         {
-          if(socketResult.status==="111")
+
+          if(socketResult.certs)
+          {
+
+             window.webContents.send('show-certificates',e.data)
+          }
+          else if(socketResult.fromDll)
+          {
+              window.webContents.send('show-dll-certificate',e.data)
+          }
+          else if(socketResult.status)
+          {
+            
+          if(socketResult.status==="111" && socketResult.multiSignFlag==="false")
             {
               window.webContents.send('rerender-pdf',socketResult)
               window.webContents.send('sending-to-socket')
@@ -159,14 +193,23 @@ const initializeSocket = () => {
             
             io.emit('signed-data',e.data)
             }
+            else if(socketResult.status==="111" && socketResult.multiSignFlag==="true")
+            {
+              signedReportsList.push(e.data)
+            }
             else
     
             { 
               
               let msgObj = signingStatusMessage[socketResult.status]
               console.log(msgObj)
-              window.webContents.send('show-configuration-status',msgObj)
+              window.webContents.send('show-sign-status',msgObj)
             }
+          }
+          else
+          {
+              window.webContents.send('show-configuration-status',certificateExtractionMessages[socketResult.flag])
+          }
         }
       
   
@@ -186,11 +229,12 @@ const initializeSocket = () => {
   
     
   }
-
+const openCrs= ()=>{
+    shell.openExternal("https://sbicrs.info.sbi/CRS").then(r => (console.log("Browser Open")))
+}
 const renderTokens = (flag) =>{
-  
-  // const tokenResponse =await tokencaller()
-  // console.log(JSON.stringify(tokenResponse))
+
+
   if(flag===1)
   {
     tokencaller().then(tokenResponse=>{
@@ -252,12 +296,13 @@ const openFilePicker = async ()=>{
   
   
 }
-const createWindow =  ()=>{
+const
+    createWindow =  ()=>{
     
     window = new BrowserWindow({
         title:"CRS PDF - Signer",
-        width:1000,
-        height:700,
+        width:1440,
+        height:880,
         icon:"./tcrs_logo.ico",
         webPreferences: {
             contextIsolation: true,
@@ -296,13 +341,7 @@ const createWindow =  ()=>{
    
    
 }
-// const startJar = ()=>{  
-//     javacaller()
-//     setTimeout(()=>{
-//         initializeSocket()
-//     },3000)
- 
-// }
+
 const checkToken = (event,credentials) =>{
  
   credentials=JSON.parse(credentials)
@@ -327,33 +366,50 @@ const checkToken = (event,credentials) =>{
   
 }
 
+const sendToSocket = (content) =>{
+  if(con.socket){
+    if(con.socket.readyState === WebSocket.OPEN)
+      { console.log("Socket is Open and Sending Content")
+          console.log(content)
+          con.socket.send(content)
+      }
+    else if (con.socket.readyState === WebSocket.CONNECTING)
+    { console.log("Socket is in Connection State")
+      setTimeout(()=>{
+          sendToSocket(content)
+      },3000)
+    }
+    else
+    { console.log("Socket is Closed or in Closing State")
+      initializeSocket()
+      setTimeout(()=>{
+        sendToSocket(content)
+      },5000)
+    }
+  }
+  else
+  {
+    setTimeout(()=>{
+      sendToSocket(content)
+    },3000)
+  }
+}
 
 const sendContent = (event,content)=>{
         
+        //
+        //
+        // console.log(`fileName in node = ${fileName} file name node got = ${content}`)
         
-        fileName = JSON.parse(content).fileName
-        console.log(`fileName in node = ${fileName} file name node got = ${content}`)
-        
-        if(con.socket){
-          if(con.socket.readyState === WebSocket.OPEN)
-            { console.log("Socket is Open and Sending Content")
-                con.socket.send(content)
-            }
-          else if (con.socket.readyState === WebSocket.CONNECTING)
-          { console.log("Socket is in Connection State")
-            setTimeout(()=>{
-                sendContent(event,content)
-            },3000)
-          }
-          else
-          { console.log("Socket is Closed or in Closing State")
-            initializeSocket()
-            setTimeout(()=>{
-              sendContent(event,content)
-            },5000)
-          }
-        }
+       sendToSocket(content)
 
+}
+const getCertificates = (event) =>{
+  const certificateRequest = {
+      flagForSigning:"2",
+      dllSigningFlag: "false"
+  }
+  sendToSocket(JSON.stringify(certificateRequest))
 }
 const sendQuitEvent = ()=>{
   console.log("Inside Quit Event")
@@ -364,15 +420,19 @@ const sendQuitEvent = ()=>{
   }
   
 }
-const configureNewToken=(event,newTokenDetails)=>
+const configureNewToken= async (event,newTokenDetails)=>
 {
   //const name = "token"
+    console.log("Sending for DLL Cert Extraction")
   const tokenPath=newTokenDetails.selectedFilePath
+  const slotIndex = newTokenDetails.slotIndex
   console.log(newTokenDetails)
-  configUpdater(`name=crs\nlibrary=${tokenPath}`)
-  setTimeout(()=>{
-    window.webContents.send("config-valid")
-  },3000)
+  const fileWritingStatus =await configUpdater(`name=crs\nlibrary=${tokenPath}\nslot=${slotIndex}`)
+  if(fileWritingStatus)
+  {
+      console.log({...newTokenDetails,dllSigningFlag:"true",flagForSigning:"2"})
+    sendToSocket(JSON.stringify({...newTokenDetails,flagForSigning:"2",dllSigningFlag: "true"}))
+  }
 }
 const configChanger= (event,details) =>{
   //const name ="token"
@@ -402,11 +462,11 @@ const configChanger= (event,details) =>{
 }
 app.on('before-quit',()=>{
   
- 
+  console.log(signedReportsList)
   sendQuitEvent()
 })
 app.on('win-all-closed',()=>{
-  
+
   app.quit()
 })
 // This will make sure only one instance of the app can run at a time
@@ -428,6 +488,8 @@ app.whenReady().then(()=>{
     ipcMain.on('check-token',checkToken)
     ipcMain.on('configure-newtoken',configureNewToken)
     ipcMain.on('open-filepicker',openFilePicker)
+    ipcMain.on('get-certificates',getCertificates)
+    ipcMain.on('open-crs',openCrs)
   //   globalShortcut.register('Control+Shift+I', () => {
   //     // When the user presses Ctrl + Shift + I, this function will get called
   //     // You can modify this function to do other things, but if you just want

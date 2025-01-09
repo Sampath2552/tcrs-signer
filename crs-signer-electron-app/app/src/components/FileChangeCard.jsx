@@ -64,9 +64,9 @@ export default function FileChangeCard({setOpenLoader,selectedTokenName,configur
                     <Typography fontSize={"1rem"} align="left" color="#36454F">
                         Select Certifying Authority (CA)/DSC token issuer
                     </Typography>
+                        id="select-certifying-authority"
                     <Select
                         labelId="select-certifying-authority"
-                        id="select-certifying-authority"
                         value={selectedTokenName}
                         onChange={handleAuthorityChange}
                         IconComponent={ArrowDropDownCircleIcon}

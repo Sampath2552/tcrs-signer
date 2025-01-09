@@ -7,11 +7,13 @@ import org.json.JSONObject;
 
 import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class CertificateLister {
@@ -33,7 +35,7 @@ public class CertificateLister {
 
         // Iterate over certificates
 
-
+        SimpleDateFormat formatPattern = new SimpleDateFormat("dd MMM yyyy");
         while (aliases !=null  && aliases.hasMoreElements()) {
             Map<String, Object> certDetails = new HashMap<String, Object>();
             String alias = aliases.nextElement();
@@ -42,19 +44,26 @@ public class CertificateLister {
                 cert = (X509Certificate) keyStore.getCertificate(alias);
                 if ((keyStore.isKeyEntry(alias)) && (cert != null) && (cert.getKeyUsage() != null)) {
                     certDetails.put("alias", alias);
-                    certDetails.put("expirationDate", cert.getNotAfter());
+                    certDetails.put("expirationDate", formatPattern.format(cert.getNotAfter()));
                     X500Principal subjectPrincipal = cert.getSubjectX500Principal();
                     X500Name subjectX500name = new X500Name(subjectPrincipal.getName());
-                    RDN cn = subjectX500name.getRDNs(BCStyle.CN)[0];
-                    certDetails.put("subjectCN", IETFUtils.valueToString(cn.getFirst().getValue()));
+                    RDN subjectCN = subjectX500name.getRDNs(BCStyle.CN)[0];
+                    certDetails.put("issuedTo", IETFUtils.valueToString(subjectCN.getFirst().getValue()));
                     X500Principal issuerPrincipal = cert.getIssuerX500Principal();
                     X500Name issuerX500name = new X500Name(issuerPrincipal.getName());
-                    RDN icn = issuerX500name.getRDNs(BCStyle.CN)[0];
-                    certDetails.put("issuerCN", IETFUtils.valueToString(icn.getFirst().getValue()));
+                    String serialNo = String.valueOf(cert.getSerialNumber());
+                    RDN issuerCN = issuerX500name.getRDNs(BCStyle.CN)[0];
+                    certDetails.put("issuerDetails",issuerPrincipal);
+                    certDetails.put("issuedBy", IETFUtils.valueToString(issuerCN.getFirst().getValue()));
+                    System.out.println(cert.getSigAlgName());
                     Date today = new Date();
                     // The Current date should not be after the expiration date and not before the starting date
                     boolean validity = !today.after(cert.getNotAfter()) && !today.before(cert.getNotBefore());
                     certDetails.put("validity", validity);
+                    certDetails.put("serialNo",serialNo);
+                    certDetails.put("fromDll",false);
+                    System.out.println(serialNo);
+
                     certsList.add(certDetails);
                 }
             } catch (KeyStoreException e) {
@@ -65,6 +74,7 @@ public class CertificateLister {
 
         }
         certificateListObj.put("certs", certsList);
+        System.out.println(certificateListObj);
         return (certificateListObj);
     }
     public static X509Certificate getCertificate(String alias) {
@@ -81,6 +91,10 @@ public class CertificateLister {
             throw new RuntimeException(e);
         }
         return cert;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getCertificatesList());
     }
 }
 

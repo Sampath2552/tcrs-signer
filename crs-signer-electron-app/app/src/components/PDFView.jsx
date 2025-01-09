@@ -46,6 +46,8 @@ const PdfView = ({pdfData,role,changePdfScreenStatus,setOpenLoader,showSignButto
         let fileName = localStorage.getItem("fileName")
         let user ={
             flagForSigning:"1",
+            dllSigningFlag:"false",
+            alias:"ANIL BABU KAYALORATH",
             userId: userId,
             data:pdfData,
             role:role,
