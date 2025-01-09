@@ -50,6 +50,7 @@ public class TokenDetector {
             terminals = factory.terminals().list();
             for (CardTerminal terminal : terminals) {
                 System.out.println(terminal.getName());
+
             }
         } catch (CardException e) {
             System.out.println("0");

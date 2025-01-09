@@ -3,29 +3,29 @@
     <output-path>$PROJECT_DIR$/out/artifacts/CrsSignerJavaCore_jar</output-path>
     <root id="archive" name="CrsSignerJavaCore.jar">
       <element id="module-output" name="CrsSignerJavaCore" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/pdfbox-3.0.3.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/fontbox-3.0.3.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/json-20240303.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/pdfbox-io-3.0.3.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/bcpkix-jdk15on-1.70.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/bcprov-jdk15on-1.70.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/bcutil-jdk15on-1.70.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/commons-logging-1.3.3.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/javax.servlet-api-3.1.0.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/javax.websocket-api-1.1.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/jetty-io-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/jetty-http-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/jetty-util-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/jetty-client-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/jetty-server-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/jetty-servlet-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/websocket-api-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/jetty-security-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/jetty-util-ajax-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/websocket-client-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/websocket-common-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/websocket-server-9.4.44.v20210927.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Signer/Libraries/websocket-servlet-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/bcpkix-jdk15on-1.70.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/bcprov-jdk15on-1.70.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/bcutil-jdk15on-1.70.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/commons-logging-1.3.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/fontbox-3.0.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/javax.servlet-api-3.1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/javax.websocket-api-1.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/jetty-client-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/jetty-http-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/jetty-io-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/jetty-security-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/jetty-server-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/jetty-servlet-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/jetty-util-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/jetty-util-ajax-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/json-20240303.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/pdfbox-3.0.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/pdfbox-io-3.0.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/websocket-api-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/websocket-client-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/websocket-common-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/websocket-server-9.4.44.v20210927.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jarFiles/websocket-servlet-9.4.44.v20210927.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

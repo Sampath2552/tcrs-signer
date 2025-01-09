@@ -227,8 +227,9 @@ public class SignAtBookmarks {
         gen.addCertificate(certificateHolder);
 
         CMSTypedData msg = new CMSProcessableByteArray(IOUtils.toByteArray(content));
+        System.out.println("Before Generate");
         CMSSignedData signedData = gen.generate(msg,false);
-
+        System.out.println("After Generate");
         return  signedData.getEncoded();
     }
 
@@ -325,7 +326,7 @@ public class SignAtBookmarks {
                     cs.transform(initialScale);
                 }
                 // show background (just for debugging, to see the rect size + position)
-                cs.drawImage(imageXObject, 40, 15,rect.getWidth()/3,rect.getHeight()/5);
+                cs.drawImage(imageXObject, 0, 0,130,50);
                 cs.setNonStrokingColor(Color.WHITE);
 //                cs.addRect(-5000, -5000, 10000, 10000);
 //                cs.fill();
@@ -464,10 +465,11 @@ public class SignAtBookmarks {
             signingMap.put("signedContent", baos.toByteArray());
             return signingMap;
         }
-        String DN = String.valueOf(cert.getSubjectX500Principal());
-//        System.out.println("DN="+DN);
-        String cnComponent = DN.split(",")[0];
-        String cnName = cnComponent.startsWith("CN=") ? cnComponent.substring(3) : "" ;
+        X500Principal subjectPrincipal = cert.getSubjectX500Principal();
+        X500Name subjectX500name = new X500Name(subjectPrincipal.getName());
+        RDN cn = subjectX500name.getRDNs(BCStyle.CN)[0];
+        String cnName =IETFUtils.valueToString(cn.getFirst().getValue());
+
         String s="";
         PDDocument doc = Loader.loadPDF(barr);
 
@@ -551,10 +553,151 @@ public class SignAtBookmarks {
         return data;
     }
 
+    public static Map<String,Object> configureSignatureForByteArrayWithWindowsMy(String pass, byte[] barr, String role,String alias) throws UnrecoverableKeyException, OperatorCreationException, CMSException, IOException {
+        boolean state = false;
+        Map<String,Object> signingMap = new HashMap<String, Object>() ;
+        String configlocation = CFG_FILE_PATH;
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+       // sun.security.pkcs11.SunPKCS11 providerPKCS11 = new sun.security.pkcs11.SunPKCS11(configlocation);
+        //Security.addProvider(providerPKCS11);
+
+        KeyStore keyStore = null;
+        try {
+            keyStore = KeyStore.getInstance("WINDOWS-MY");
+            keyStore.load(null,pass.toCharArray());
+        } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        //Enumeration<String> aliases = keyStore.aliases();
+      //  String alias= "ANIL BABU KAYALORATH";
+        X509Certificate cert= null;
+        Certificate[] cl ;
+        try {
+            cert = (X509Certificate) keyStore.getCertificate(alias);
+            cl = keyStore.getCertificateChain(alias);
+        } catch (KeyStoreException e) {
+
+            signingMap.put("signProcessFlag",4);
+            signingMap.put("signedContent", baos.toByteArray());
+            return signingMap;
+        }
+        if(cert ==null )
+        {
+            signingMap.put("signProcessFlag",4);
+            signingMap.put("signedContent", baos.toByteArray());
+            return signingMap;
+        }
+        PrivateKey pk = null;
+        try {
+            pk = (PrivateKey) keyStore.getKey(alias, pass.toCharArray());
+        } catch (KeyStoreException | NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        try
+        {
+            cert.checkValidity();
+        } catch (CertificateNotYetValidException e) {
+            signingMap.put("signProcessFlag",2);
+            signingMap.put("signedContent", baos.toByteArray());
+            return signingMap;
+        } catch (CertificateExpiredException e) {
+            signingMap.put("signProcessFlag",3);
+            signingMap.put("signedContent", baos.toByteArray());
+            return signingMap;
+        }
+        X500Principal subjectPrincipal = cert.getSubjectX500Principal();
+        X500Name subjectX500name = new X500Name(subjectPrincipal.getName());
+        RDN cn = subjectX500name.getRDNs(BCStyle.CN)[0];
+        String cnName =IETFUtils.valueToString(cn.getFirst().getValue());
+
+        String s="";
+        PDDocument doc = null;
+        try {
+            doc = Loader.loadPDF(barr);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        String dest=  TEMP_FILE_PATH;
+        File destFile = new File(dest);
+        InputStream imageStream = null;
+//        ByteArrayInputStream bais = new ByteArrayInputStream(barr);
+        BookMark currentBookmark = ExtractBookmarks.extractSpecificBookmarkFromByteArray(barr, role);
+
+
+        float rectWidth = 130;
+        float rectHeight = 50;
+
+
+        assert currentBookmark != null;
+        Rectangle2D humanRect = new Rectangle2D.Float(currentBookmark.getX(),currentBookmark.getY(), rectWidth, rectHeight);
+        PDRectangle rect = createSignatureRectangle(doc,humanRect);
+        int noOfPages = doc.getNumberOfPages();
+        int lastPage = noOfPages -1;
+        // String location = "Location-"+"Mumbai";
+        // String reason = "Reason-"+"SBI";
+        // Setting Up SignatureF
+        PDSignature signature = new PDSignature();
+        signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
+        signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
+        System.out.println("At Line 524, Before Setting Signature , cnName="+cnName);
+        signature.setName(cnName);
+        //// signature.setLocation(location);
+        //signature.setReason(reason);
+
+        signature.setSignDate(Calendar.getInstance());
+
+        PDVisibleSigProperties signatureProperties = new PDVisibleSigProperties();
+        signatureProperties.signerName(cnName).preferredSize(0).page(1)
+                .visualSignEnabled(true);
+
+
+        SignatureOptions signatureOptions = new SignatureOptions();
+
+
+        signatureOptions.setVisualSignature(createVisualSignatureTemplate(doc,lastPage,rect,signature));
+        signatureOptions.setPage(lastPage);
+
+        try{
+            doc.addSignature(signature,signatureOptions);
+
+            ExternalSigningSupport externalSigningSupport = doc.saveIncrementalForExternalSigning(baos);
+
+            byte[] csmSignature = sign(externalSigningSupport.getContent(),cl,pk,cert);
+            externalSigningSupport.setSignature(csmSignature);
+
+        }
+        catch(Exception e)
+        {
+            System.out.println(e.getMessage());
+        }
+        byte[] result= baos.toByteArray();
+        if( result.length!=0)
+        {
+            signingMap.put("signProcessFlag",1);
+            signingMap.put("signedContent", result);
+        }
+        else {
+            signingMap.put("signProcessFlag",0);
+            signingMap.put("signedContent", result);
+        }
+
+        return signingMap;
+
+    }
+
+
     public static void main(String[] args) throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, OperatorCreationException, CMSException {
 
        String base64String="JVBERi0xLjUKJeLjz9MKMyAwIG9iago8PC9GaWx0ZXIvRmxhdGVEZWNvZGUvTGVuZ3RoIDE3OT4+c3RyZWFtCnicrY+9DsIwDIR3P4XHMgBO0xR1LT8DG5ANMZSmDaEqERG8P0klBEhQIcFiS/b5vjMhwyFDQpEJX8sWzpBL4CkKkaFUMJewghiXYRp0hHe1bGG8YMgIZQ3RQB6D9iHpzJ6OOCFPklEavx5St3YaoumhKpvKYW5t0xauCY6E+o3rdue76lJ95omJj8n7gMVVmYt1uP8PMGbCA6kHODPabIw+/QhK/Gc87ftsbb/G3ABMEmxwCmVuZHN0cmVhbQplbmRvYmoKMSAwIG9iago8PC9UYWJzL1MvR3JvdXA8PC9TL1RyYW5zcGFyZW5jeS9UeXBlL0dyb3VwL0NTL0RldmljZVJHQj4+L0NvbnRlbnRzIDMgMCBSL1R5cGUvUGFnZS9SZXNvdXJjZXM8PC9Db2xvclNwYWNlPDwvQ1MvRGV2aWNlUkdCPj4vRm9udDw8L0YxIDIgMCBSPj4+Pi9QYXJlbnQgNCAwIFIvUm90YXRlIDkwL01lZGlhQm94WzAgMCA1OTUgODQyXT4+CmVuZG9iago1IDAgb2JqClsxIDAgUi9YWVogNTcwIDU0NC42MiAwXQplbmRvYmoKNiAwIG9iagpbMSAwIFIvWFlaIDMwIDM1NC42MiAwXQplbmRvYmoKNyAwIG9iagpbMSAwIFIvWFlaIDIxNSA1NDAuNjIgMF0KZW5kb2JqCjggMCBvYmoKWzEgMCBSL1hZWiAwIDYwNSAwXQplbmRvYmoKOSAwIG9iagpbMSAwIFIvWFlaIDQ3MCAzNzQuNjIgMF0KZW5kb2JqCjEyIDAgb2JqCjw8L0Rlc3RbMSAwIFIvWFlaIDI0MCAzMCAwXS9OZXh0IDEzIDAgUi9UaXRsZShDaGVja2VyU2lnbikvUGFyZW50IDExIDAgUj4+CmVuZG9iagoxMyAwIG9iago8PC9EZXN0WzEgMCBSL1hZWiA1MCA1NzAgMF0vTmV4dCAxNCAwIFIvVGl0bGUoQXVkaXRvclNpZ24pL1BhcmVudCAxMSAwIFIvUHJldiAxMiAwIFI+PgplbmRvYmoKMTQgMCBvYmoKPDwvRGVzdFsxIDAgUi9YWVogMjIwIDQ3MCAwXS9UaXRsZShSb1NpZ24pL1BhcmVudCAxMSAwIFIvUHJldiAxMyAwIFI+PgplbmRvYmoKMTEgMCBvYmoKPDwvQ291bnQgLTMvVGl0bGUoKS9QYXJlbnQgMTAgMCBSL0ZpcnN0IDEyIDAgUi9MYXN0IDE0IDAgUj4+CmVuZG9iagoxMCAwIG9iago8PC9UeXBlL091dGxpbmVzL0NvdW50IDEvRmlyc3QgMTEgMCBSL0xhc3QgMTEgMCBSPj4KZW5kb2JqCjIgMCBvYmoKPDwvU3VidHlwZS9UeXBlMS9UeXBlL0ZvbnQvQmFzZUZvbnQvSGVsdmV0aWNhL0VuY29kaW5nL1dpbkFuc2lFbmNvZGluZz4+CmVuZG9iago0IDAgb2JqCjw8L0tpZHNbMSAwIFJdL1R5cGUvUGFnZXMvQ291bnQgMT4+CmVuZG9iagoxNSAwIG9iago8PC9OYW1lc1soQXVkaXRvclNpZ24pIDUgMCBSKENoZWNrZXJTaWduKSA2IDAgUihEaWdpU2lnbikgNyAwIFIoSlJfUEFHRV9BTkNIT1JfMF8xKSA4IDAgUihSb1NpZ24pIDkgMCBSXT4+CmVuZG9iagoxNiAwIG9iago8PC9EZXN0cyAxNSAwIFI+PgplbmRvYmoKMTcgMCBvYmoKPDwvTmFtZXMgMTYgMCBSL1R5cGUvQ2F0YWxvZy9PdXRsaW5lcyAxMCAwIFIvUGFnZXMgNCAwIFIvVmlld2VyUHJlZmVyZW5jZXM8PC9QcmludFNjYWxpbmcvQXBwRGVmYXVsdD4+Pj4KZW5kb2JqCjE4IDAgb2JqCjw8L0NyZWF0b3IoSmFzcGVyUmVwb3J0cyBMaWJyYXJ5IHZlcnNpb24gNy4wLjAtYjQ3OGZlYWE5YWFiNDM3NWViYTcxZGU3N2I0Y2ExMzhhZDJmNjJhYSkvQ3JlYXRpb25EYXRlKEQ6MjAyNDA5MTYxNTE4NDArMDUnMzAnKS9Qcm9kdWNlcihPcGVuUERGIDEuMy4zMik+PgplbmRvYmoKeHJlZgowIDE5CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDI2MSAwMDAwMCBuIAowMDAwMDAxMDg3IDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMTE3NSAwMDAwMCBuIAowMDAwMDAwNDY3IDAwMDAwIG4gCjAwMDAwMDA1MDcgMDAwMDAgbiAKMDAwMDAwMDU0NiAwMDAwMCBuIAowMDAwMDAwNTg2IDAwMDAwIG4gCjAwMDAwMDA2MjEgMDAwMDAgbiAKMDAwMDAwMTAxOSAwMDAwMCBuIAowMDAwMDAwOTQyIDAwMDAwIG4gCjAwMDAwMDA2NjEgMDAwMDAgbiAKMDAwMDAwMDc1MiAwMDAwMCBuIAowMDAwMDAwODU1IDAwMDAwIG4gCjAwMDAwMDEyMjYgMDAwMDAgbiAKMDAwMDAwMTM0OSAwMDAwMCBuIAowMDAwMDAxMzgzIDAwMDAwIG4gCjAwMDAwMDE1MDQgMDAwMDAgbiAKdHJhaWxlcgo8PC9JbmZvIDE4IDAgUi9JRCBbPGE5NDc4ODc5MzJiMTFlZWYyNGRlY2E1MTQ2YzRkYjIwPjxhOTQ3ODg3OTMyYjExZWVmMjRkZWNhNTE0NmM0ZGIyMD5dL1Jvb3QgMTcgMCBSL1NpemUgMTk+PgpzdGFydHhyZWYKMTY3NAolJUVPRgo=";
         byte[] barr = Base64.getDecoder().decode(base64String);
-       System.out.println(SignAtBookmarks.configureSignatureForByteArray("Password123", barr, "checker"));
+        for(int i=0;i<1;i++)
+        {  byte[] b= (byte[]) SignAtBookmarks.configureSignatureForByteArray("Password123", barr, "checker").get("signedContent");
+            System.out.println(Base64.getEncoder().encodeToString(b).length());
+        }
+
     }
 }

@@ -38,6 +38,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import InputAdornment from '@mui/material/InputAdornment';
+import ReportsList from './ReportsList';
 let userDir = window.electron.homeDir().split("\\");
 let userCompleteId = userDir[userDir.length - 1]
 let userId = userCompleteId.replace("tcs",'').replace("v",'')
@@ -62,6 +63,8 @@ export default function Home() {
     const [selectedTokenName,setSelectedTokenName] = useState('')
     const [showPassword, setShowPassword] = useState(false);
     const [showSigningProgress, setShowSigningProgress] = useState(false)
+    const [reportList,setReportList] = useState([])
+    const [showReportList,setShowReportList] = useState(false)
     let flag = true;
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -180,6 +183,9 @@ export default function Home() {
             }
             
         })
+        window.electron.ipcRenderer.on("showlog",(msg)=>{
+            window.alert(JSON.stringify(msg[0]))
+        })
         window.electron.ipcRenderer.on("acknowledgement-received",()=>{
             setSendingToSigner(false)
             setSendingToSocket(false)
@@ -201,30 +207,48 @@ export default function Home() {
             }
 
         })
+        window.electron.ipcRenderer.on("show-reportlist",(response)=>{
+            
+            response = JSON.parse(response[0])
+            console.log(response)
+           
+            if(response!=null && response.length>0)
+            {   
+                setShowReportList(true)
+                setReportList(response)
+            }
+        })
         window.electron.ipcRenderer.on("render-pdf", (response) => {
 
             let dataObject = response[0]
             //   console.log("Data Object = " + JSON.stringify(dataObject))
             let tokenConfigStatus = localStorage.getItem("isTokenConfigured")
             let crsConnectionStatus = localStorage.getItem("isCrsConnected")
-            console.log("isTokenConfigured="+tokenConfigStatus+" isCrsConnected="+crsConnectionStatus)
-            if (tokenConfigStatus==="true" && crsConnectionStatus==="true")
-            {
-                setPdfData(dataObject.data)
-                
-                console.log(pdfData)
-                setRole(dataObject.role)
-                setShowPdfScreen(true)
-                setShowSignButton(true)
-                localStorage.setItem("fileName",dataObject.fileName)
-            }
-            else
-            {
-                if(tokenConfigStatus===null || tokenConfigStatus==="" ||  tokenConfigStatus==="false" )
-                {
-                    openPopup("Token not configured","Configure token  before trying to sign",'')
-                }
-            }
+             console.log("isTokenConfigured="+tokenConfigStatus+" isCrsConnected="+crsConnectionStatus)
+            setPdfData(dataObject.data)
+
+            console.log(pdfData)
+            setRole(dataObject.role)
+            setShowPdfScreen(true)
+            setShowSignButton(true)
+            localStorage.setItem("fileName",dataObject.fileName)
+            // if (tokenConfigStatus==="true" && crsConnectionStatus==="true")
+            // {
+            //     setPdfData(dataObject.data)
+            //
+            //     console.log(pdfData)
+            //     setRole(dataObject.role)
+            //     setShowPdfScreen(true)
+            //     setShowSignButton(true)
+            //     localStorage.setItem("fileName",dataObject.fileName)
+            // }
+            // else
+            // {
+            //     if(tokenConfigStatus===null || tokenConfigStatus==="" ||  tokenConfigStatus==="false" )
+            //     {
+            //         openPopup("Token not configured","Configure token  before trying to sign",'')
+            //     }
+            // }
 
 
 
@@ -315,160 +339,166 @@ export default function Home() {
             {/* <Button onClick={() => { dp() }}>AV</Button> */}
             <PopupModal title={popupProps.title} description={popupProps.description} description1={popupProps.description1} popupOpen={popupOpen}
                             setPopupOpen={setPopupOpen}/>
-            {(showPdfScreen && pdfData) ? (<>
+            {(showPdfScreen && pdfData) ? (
 
                 <PdfView pdfData={pdfData} role={role}  changePdfScreenStatus={changePdfScreenStatus}
                     setOpenLoader={setOpenLoader} showSignButton={showSignButton} setShowSignButton={setShowSignButton} setSendingToSigner={setSendingToSigner}/>
 
-            </>) : (<><Box display={"flex"} sx={{
-                m: 3,
-                p: 4,
-                border: '1px solid black',
-                borderRadius: 5,
-                backgroundColor: "#E5E4E2",
-                justifyContent: {xs: "space-between", md: "space-between", lg: "space-evenly"}
-            }}>
-                
-                <Card sx={{width: "25rem", height: "25rem", p: 1.5, borderRadius: 5, boxSizing: 'border-box'}}>
-                    {
-                        showFileChangeCard ?
-                         <FileChangeCard setOpenLoader={setOpenLoader} selectedTokenName={selectedTokenName} configureNewToken={configureNewToken}/> :
-                         ( 
-                                <CardMedia component="img" image="./Assets/HomePageImage.png" sx={{height:"100%",borderRadius:"5px" ,width:"100%", margin:"auto"}}></CardMedia>
-                                
-                            
-                            )
-                    }
-                </Card>
-
-
-                <Box display={"flex"} flexDirection={"column"} sx={{
-                    maxWidth: "20rem",
-                    height: "25rem",
-                    border: showFileChangeCard ? "" : "1px solid black",
+            ) : (
+                <>
+                     {
+                showReportList ? <ReportsList reportList = {reportList}/>:  (<><Box display={"flex"} sx={{
+                    m: 3,
+                    p: 4,
+                    border: '1px solid black',
                     borderRadius: 5,
-                    boxSizing: 'border-box',
-                    position: "relative"
+                    backgroundColor: "#E5E4E2",
+                    justifyContent: {xs: "space-between", md: "space-between", lg: "space-evenly"}
                 }}>
-                    <Container sx={{p: 2.5, pt: 1.5}}>
-                        <Box sx={{color: "#808080", mb: 0}}>
-                            <Typography fontSize={10} component="span">
-                                If your DSC token not shown Click to fetch
-                            </Typography>
-                            <IconButton onClick={handleClickFetchTokens}>
-                                <RefreshIcon sx={{p: 0, m: 0, width: 35, height: 35, mb: -1.5}}/>
-                            </IconButton>
-                        </Box>
-
-                        <Typography variant="h6" align="left" color="#36454F" sx={{fontWeight: 'bold'}}>
-                            DSC Plugged in
-                        </Typography>
-                        <Divider orientation="horizontal" flexItem color="#808080" sx={{borderBottomWidth: 2}}/>
-
-
-                        <List sx={{
-                            width: '100%',
-                            maxWidth: "20rem",
-                            overflow: 'auto',
-                            maxHeight: showFileChangeCard ? '16rem' : '8rem'
-                        }}>
-                            {tokens.map((value, index) => {
-                                const labelId = `list-label-${value}`;
-
-                                return (
-                                    <ListItem
-                                        key={value}
-                                        secondaryAction={
-                                            <IconButton edge="end">
-                                                {(showUsbOffIconIndex === index) && (isTokenConfigured) ?
-                                                     <UsbIcon sx={{color: "green"}}/>
-                                                    :<UsbOffIcon sx={{color: "red"}} />}
-                                            </IconButton>
-                                        }
-                                        disablePadding
-                                    >
-                                        <ListItemButton role={undefined} id={labelId} primary={value} onClick={() => handleMountToken(index, value)} dense>
-
-                                            <ListItemText id={labelId} primary={value}
-                                                          />
-                                        </ListItemButton>
-                                    </ListItem>
-                                );
-                            })}
-                        </List>
-
-
-                    </Container>
-
-                    {
-                        showSignStatus ? <SignReadyStatus isCrsConnected={isCrsConnected}
-                                                          isTokenConfigured={isTokenConfigured}/> : ""
-                    }
-
-                </Box>
-
-            </Box>
-                <Dialog
-                    open={open}
-                    onClose={handlePwdDialogClose}
-
-                    PaperProps={{
-                        component: 'form',
-                        sx: {borderRadius: 3},
-                        onSubmit: (event) => {
-                            event.preventDefault();
-                            const formData = new FormData(event.currentTarget);
-                            const formJson = Object.fromEntries(formData.entries());
-                            const password = formJson.tokenpass;
-                            console.log(password);
-                            let token = {userId: userId, password: password}
-                            handlePwdDialogClose();
-                            // window.alert(JSON.stringify(token))
-                            setOpenLoader(true)
-                            window.signer.checkToken(JSON.stringify(token))
-                        },
-                    }}
-                >
-                    <DialogTitle sx={{fontSize: "1rem"}}>Enter Token Password</DialogTitle>
-
-                    <DialogContent>
-
-                        <TextField
-                            autoFocus
-                            required
-                            margin="dense"
-                            id="name"
-                            name="tokenpass"
-                            label="Password"
-                            type={showPassword ? 'text' : 'password'}
-                            fullWidth
-                            variant="standard"
-                            inputProps={{
-                                endAdornment:  <InputAdornment position="end">
-                                <IconButton
-                                  aria-label={
-                                    showPassword ? 'hide the password' : 'display the password'
-                                  }
-                                  onClick={handleClickShowPassword}
-                                  onMouseDown={handleMouseDownPassword}
-                                  onMouseUp={handleMouseUpPassword}
-                                  edge="end"
-                                >
-                                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                    
+                    <Card sx={{width: "25rem", height: "25rem", p: 1.5, borderRadius: 5, boxSizing: 'border-box'}}>
+                        {
+                            showFileChangeCard ?
+                             <FileChangeCard setOpenLoader={setOpenLoader} selectedTokenName={selectedTokenName} configureNewToken={configureNewToken}/> :
+                             ( 
+                                    <CardMedia component="img" image="./Assets/HomePageImage.png" sx={{height:"100%",borderRadius:"5px" ,width:"100%", margin:"auto"}}></CardMedia>
+                                    
+                                
+                                )
+                        }
+                    </Card>
+    
+    
+                    <Box display={"flex"} flexDirection={"column"} sx={{
+                        maxWidth: "20rem",
+                        height: "25rem",
+                        border: showFileChangeCard ? "" : "1px solid black",
+                        borderRadius: 5,
+                        boxSizing: 'border-box',
+                        position: "relative"
+                    }}>
+                        <Container sx={{p: 2.5, pt: 1.5}}>
+                            <Box sx={{color: "#808080", mb: 0}}>
+                                <Typography fontSize={10} component="span">
+                                    If your DSC token not shown Click to fetch
+                                </Typography>
+                                <IconButton onClick={handleClickFetchTokens}>
+                                    <RefreshIcon sx={{p: 0, m: 0, width: 35, height: 35, mb: -1.5}}/>
                                 </IconButton>
-                              </InputAdornment>
-                              }}
-                        />
-                    </DialogContent>
-                    <DialogActions sx={{justifyContent: "space-evenly"}}>
-                        <Button sx={{fontSize: "0.8rem"}} onClick={handlePwdDialogClose}>Cancel</Button>
-                        <Button sx={{fontSize: "0.8rem"}} type="submit">Verify</Button>
-                    </DialogActions>
-                </Dialog>
+                            </Box>
+    
+                            <Typography variant="h6" align="left" color="#36454F" sx={{fontWeight: 'bold'}}>
+                                DSC Plugged in
+                            </Typography>
+                            <Divider orientation="horizontal" flexItem color="#808080" sx={{borderBottomWidth: 2}}/>
+    
+    
+                            <List sx={{
+                                width: '100%',
+                                maxWidth: "20rem",
+                                overflow: 'auto',
+                                maxHeight: showFileChangeCard ? '16rem' : '8rem'
+                            }}>
+                                {tokens.map((value, index) => {
+                                    const labelId = `list-label-${value}`;
+    
+                                    return (
+                                        <ListItem
+                                            key={value}
+                                            secondaryAction={
+                                                <IconButton edge="end">
+                                                    {(showUsbOffIconIndex === index) && (isTokenConfigured) ?
+                                                         <UsbIcon sx={{color: "green"}}/>
+                                                        :<UsbOffIcon sx={{color: "red"}} />}
+                                                </IconButton>
+                                            }
+                                            disablePadding
+                                        >
+                                            <ListItemButton role={undefined} id={labelId} primary={value} onClick={() => handleMountToken(index, value)} dense>
+    
+                                                <ListItemText id={labelId} primary={value}
+                                                              />
+                                            </ListItemButton>
+                                        </ListItem>
+                                    );
+                                })}
+                            </List>
+    
+    
+                        </Container>
+    
+                        {
+                            showSignStatus ? <SignReadyStatus isCrsConnected={isCrsConnected}
+                                                              isTokenConfigured={isTokenConfigured}/> : ""
+                        }
+    
+                    </Box>
+    
+                </Box>
+                    <Dialog
+                        open={open}
+                        onClose={handlePwdDialogClose}
+    
+                        PaperProps={{
+                            component: 'form',
+                            sx: {borderRadius: 3},
+                            onSubmit: (event) => {
+                                event.preventDefault();
+                                const formData = new FormData(event.currentTarget);
+                                const formJson = Object.fromEntries(formData.entries());
+                                const password = formJson.tokenpass;
+                                console.log(password);
+                                let token = {userId: userId, password: password}
+                                handlePwdDialogClose();
+                                // window.alert(JSON.stringify(token))
+                                setOpenLoader(true)
+                                window.signer.checkToken(JSON.stringify(token))
+                            },
+                        }}
+                    >
+                        <DialogTitle sx={{fontSize: "1rem"}}>Enter Token Password</DialogTitle>
+    
+                        <DialogContent>
+    
+                            <TextField
+                                autoFocus
+                                required
+                                margin="dense"
+                                id="name"
+                                name="tokenpass"
+                                label="Password"
+                                type={showPassword ? 'text' : 'password'}
+                                fullWidth
+                                variant="standard"
+                                inputProps={{
+                                    endAdornment:  <InputAdornment position="end">
+                                    <IconButton
+                                      aria-label={
+                                        showPassword ? 'hide the password' : 'display the password'
+                                      }
+                                      onClick={handleClickShowPassword}
+                                      onMouseDown={handleMouseDownPassword}
+                                      onMouseUp={handleMouseUpPassword}
+                                      edge="end"
+                                    >
+                                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                  </InputAdornment>
+                                  }}
+                            />
+                        </DialogContent>
+                        <DialogActions sx={{justifyContent: "space-evenly"}}>
+                            <Button sx={{fontSize: "0.8rem"}} onClick={handlePwdDialogClose}>Cancel</Button>
+                            <Button sx={{fontSize: "0.8rem"}} type="submit">Verify</Button>
+                        </DialogActions>
+                    </Dialog> </>)
+            }
+                           
+              
                 
             </>)
             }
-      
+           
             <ProgressComponent handleProgressBackToHome={handleProgressBackToHome} handleProgressClose={handleProgressClose} sendingToSigner={sendingToSigner} sendingToSocket={sendingToSocket} sentToSocket={sentToSocket}/>
           
 

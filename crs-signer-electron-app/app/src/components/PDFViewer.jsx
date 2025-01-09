@@ -30,8 +30,9 @@ const PdfViewer = ({pdfData}) => {
   })
   const renderToolbar = (Toolbar) => <Toolbar>{renderDefaultToolbar(transform)}</Toolbar>
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
-    renderToolbar,
-    sidebarTabs:()=>{return []}
+    renderToolbar
+/*    // ,
+    // sidebarTabs:()=>{return []}*/
   })
   const {renderDefaultToolbar} = defaultLayoutPluginInstance.toolbarPluginInstance
   useEffect(() => {
