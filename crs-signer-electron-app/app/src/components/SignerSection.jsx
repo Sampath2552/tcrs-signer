@@ -32,24 +32,18 @@ import AddCertificate from "./AddCertificate";
 
 function SignerSection() {
     const [snackOpen,setSnackOpen] = useState(false)
-
     const [snackMsg,setSnackMsg] = useState(null)
     const [messageType,setMessageType] = useState("start")
-
     const [certificateToBeUsed,setCertificateToBeUsed] = useState({})
     const [displayCertificateInfo,setDisplayCertificateInfo] = useState(false)
     const [renderPdf,setRenderPdf] = useState(false)
-
     const [displayLandingScreen,setDisplayLandingScreen] = useState(true)
     const [displayCertificateList,setDisplayCertificateList] = useState(false)
     const [displayApplicationScreen,setDisplayApplicationScreen] = useState(false)
     const [displaySigningScreen,setDisplaySigningScreen] = useState(false)
-
     const [isCertificateConfigured,setIsCertificateConfigured] = useState(false)
     const [isApplicationConnected,setIsApplicationConnected] = useState(false)
-
     const [pdfData,setPdfData] = useState(null)
-
     const [receivedData,setReceivedData] = useState({})
     const [crsLoggedInUserId,setCrsLoggedInUserId] = useState('')
     const [sentToCrs,setSentToCrs] = useState(false)
@@ -101,11 +95,14 @@ function SignerSection() {
             response = JSON.parse(response[0])
 
 
-
-            if(response!=null && response.certs && response.certs.length>0)
+            console.log("Response Received = "+response);
+            if(response!=null && response.certs )
             {
+                console.log("Certificates Received = "+response.certs)
 
-                setCertificatesList(response.certs)
+                    setCertificatesList(response.certs)
+
+                
             }
         })
     },[1])

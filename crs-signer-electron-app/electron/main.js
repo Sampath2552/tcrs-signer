@@ -69,8 +69,11 @@ io.on('connection', (socket) => {
       const byPassFlag = JSON.parse(msg).byPassFlag
       if(userId===crsLoggedInUserId || byPassFlag)
       {
+        
 
           fileName = JSON.parse(msg).fileName
+      
+          console.log("File Name ="+fileName)
           window.webContents.send('render-pdf',JSON.parse(msg))
 
 
@@ -85,7 +88,7 @@ io.on('connection', (socket) => {
   socket.on('multisign',(msg)=>{
     //console.log(msg)
       let reportsMsg = JSON.parse(msg)
-      console.log(reportsMsg.reports)
+      // console.log(reportsMsg.reports)
       let userId = reportsMsg.userId
       
       let role = reportsMsg.role
@@ -169,11 +172,12 @@ const initializeSocket = () => {
         }
         else
         {
-
+         // console.log(socketResult)
           if(socketResult.certs)
           {
-
+           console.log("Triggering show-certificates event")
              window.webContents.send('show-certificates',e.data)
+
           }
           else if(socketResult.fromDll)
           {
@@ -202,7 +206,7 @@ const initializeSocket = () => {
             { 
               
               let msgObj = signingStatusMessage[socketResult.status]
-              console.log(msgObj)
+              //console.log(msgObj)
               window.webContents.send('show-sign-status',msgObj)
             }
           }
@@ -313,7 +317,7 @@ const
     
     window.maximizable=false
     const startUrl = url.format({
-        pathname: path.join(__dirname, '../build/index.html'),
+        pathname: path.join(__dirname, '../app/build/index.html'),
         protocol: 'file',
       });
       // window.setAlwaysOnTop(true)
@@ -370,7 +374,7 @@ const sendToSocket = (content) =>{
   if(con.socket){
     if(con.socket.readyState === WebSocket.OPEN)
       { console.log("Socket is Open and Sending Content")
-          console.log(content)
+         
           con.socket.send(content)
       }
     else if (con.socket.readyState === WebSocket.CONNECTING)

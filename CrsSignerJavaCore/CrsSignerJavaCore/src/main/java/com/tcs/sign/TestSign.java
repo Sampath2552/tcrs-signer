@@ -139,6 +139,8 @@ public class TestSign {
 //        System.out.println("77777777777777");
 
         PDDocument doc = Loader.loadPDF(srcFile);
+
+
         int noOfSignatures = doc.getSignatureDictionaries().size();
 
         PDPage firstpage = doc.getPage(0);
@@ -272,6 +274,7 @@ public class TestSign {
             switch (srcDoc.getPage(pageNum).getRotation())
             {
                 case 90:
+                case 0:
                     form.setMatrix(AffineTransform.getQuadrantRotateInstance(1));
                     initialScale = Matrix.getScaleInstance(bbox.getWidth() / bbox.getHeight(), bbox.getHeight() / bbox.getWidth());
                     height = bbox.getWidth();
@@ -284,7 +287,6 @@ public class TestSign {
                     initialScale = Matrix.getScaleInstance(bbox.getWidth() / bbox.getHeight(), bbox.getHeight() / bbox.getWidth());
                     height = bbox.getWidth();
                     break;
-                case 0:
                 default:
                     break;
             }
@@ -348,6 +350,12 @@ public class TestSign {
 //                float sx = fontSize;
 //                float sy = height-leading;
                 // Extracting Properties from Signature
+                System.out.println(rect.toString());
+                System.out.println("Rectangle Coordinates:");
+                System.out.println(rect.getLowerLeftX());
+                System.out.println(rect.getLowerLeftY());
+                System.out.println(rect.getUpperRightX());
+                System.out.println(rect.getUpperRightY());
                 String name = signature.getName();
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
                 SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss");
@@ -384,10 +392,7 @@ public class TestSign {
 //                cs.newLine();
                 cs.endText();
                 cs.close();
-                System.out.println(rect.getLowerLeftX());
-                System.out.println(rect.getLowerLeftY());
-                System.out.println(rect.getUpperRightX());
-                System.out.println(rect.getUpperRightY());
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

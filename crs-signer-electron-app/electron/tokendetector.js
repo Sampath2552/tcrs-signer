@@ -4,7 +4,7 @@ const {exec} = require("child_process")
 const { resolve } = require("path")
 let tokencaller = ()=>{
     return new Promise((resolve,reject)=>{
-        exec('java -cp ./resources/app/electron/Tcrs.jar com.tcs.sign.TokenDetector',(error,stdout,stderr)=>{
+        exec('java -cp ./electron/Tcrs.jar com.tcs.sign.TokenDetector',(error,stdout,stderr)=>{
             if(error) {
                 reject(`Error: ${error.message}`)
                 return
