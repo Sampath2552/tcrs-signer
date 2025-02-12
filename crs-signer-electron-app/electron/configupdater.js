@@ -1,5 +1,4 @@
 
-const { log } = require('console');
 const fs = require('fs')
 const os = require('os');
 const path = require('path');
@@ -14,7 +13,7 @@ const configUpdater = async (details) =>{
     }
     fs.writeFile(CFG_FILE_PATH,details,err=>{
 
-        if(err) false
+        if(err) return false
     })
     return true
 }

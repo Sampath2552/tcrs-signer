@@ -5,7 +5,7 @@ import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 //import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import {Container, TextField} from "@mui/material";
+import {Box, Container, TextField} from "@mui/material";
 
 const PdfViewer = ({pdfData}) => {
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -61,16 +61,16 @@ const PdfViewer = ({pdfData}) => {
   /**
   * * For rendering this component*/
   return (
-    <div style={{width: '100%' }}>
-    
-      <Container style={{ }}>
-          
-         <Worker style={{ }} workerUrl='./Assets/pdf.worker.min.js'>
-         {pdfUrl &&   <Viewer style={{ }} plugins={[defaultLayoutPluginInstance]} fileUrl={pdfUrl}/> }
+    <Box style={{width: '100%',height:"100%" }}>
+
+
+      {pdfUrl !==null &&
+          <Worker workerUrl='./Assets/pdf.worker.min.js'>
+          <Viewer  plugins={[defaultLayoutPluginInstance]} fileUrl={pdfUrl}/>
         
       </Worker>
-      </Container>
-    </div>
+      }
+    </Box>
   )
 }
 export default PdfViewer

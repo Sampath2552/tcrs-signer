@@ -31,6 +31,7 @@ public class JettyServer {
         server.setHandler(wsHandler);
         try{
             server.start();
+            //CRSTray.createTray();
         }
         catch(CloseException ex)
         {

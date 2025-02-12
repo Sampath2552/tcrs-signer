@@ -5,13 +5,17 @@ function ScreenHeader({messageType}) {
         heading:"Welcome",
         description:"Click the [Let's Go] for configuration"
     },
-    "certlist":{
+        "certlist":{
+            heading:"Select Certificate",
+            description:"Ensure DSC Token is plugged into the machine. Click refresh after insertion or removal of token."
+        },
+    "certlistFallback":{
         heading:"Select Certificate",
-        description:"Following Certificates found in your system.Select the digital certificate to sign"
+        description:"Following Certificates found in your system.Select the digital certificate to sign."
     },
     "certadd":{
         heading:"Add Certificate",
-        description:"To add the Certificate\n 1. Enter pin code to proceed.\n 2. DSC Supplier can be contacted for identifying appropriate dll for your dsc.\n 3. The .dll file will be present in \"Windows\\SysWOW64 or \"Windows\\system32\""
+        description:"To add the Certificate\n 1. Ensure DSC Token is inserted into the machine.\n 2. Click refresh after insertion or removal of token. \n 3. Ensure respective DSC Token driver is installed in the machine. \n 4. Select the token from the dropdown. \n 5. Enter DSC Token Password \n 6. Select the correct .dll file from the machine. Please refer below instructions to identify the .dll file. \n\t ● DSC Supplier can be contacted for identifying appropriate dll for your dsc. \n\t ● The .dll file will be present in \"Windows\\SysWOW64 or \"Windows\\system32\" \n 7. Click Save   "
 
     },
     "certview":{
@@ -19,11 +23,11 @@ function ScreenHeader({messageType}) {
         description:"To use the following Certificate click on [Proceed].In case you want to choose different certificate click [Back] and select the desired certificate from the list."},
     "application":{
         heading:"Application",
-        description:"The following Application is connected to TCRS Digital Signer. You can Digitally sign the files from the connected Applications."
+        description:"You can Digitally sign the files from the connected Applications."
     },
     "readyToSign":{
         heading:"Ready To Sign",
-        description:"The TCRS Digital Signer is all set to digitally sign the files. The details of the configurations set are shown below and will be used for signing."
+        description:"The TCS Digital Signer is all set to digitally sign the files. The details of the configurations set are shown below and will be used for signing."
     }
 }
     useEffect(() => {
@@ -31,10 +35,10 @@ function ScreenHeader({messageType}) {
     }, []);
   return (
     <Box  style={{display:"flex", flexDirection:"column",gap:"16px" , lineHeight:"42px"}}>
-            <Typography sx={{fontSize:"34px",fontWeight:400,color:"rgba(0,0,0,0.87)"}}>
+            <Typography sx={{fontSize:"36px",fontWeight:400,color:"rgba(0,0,0,0.87)"}}>
                 {messages[messageType].heading}
             </Typography>
-            <Typography sx={{fontSize:"16px",lineHeight:"24px",color:"rgba(0,0,0,0.6)",fontWeight:400, whiteSpace:"pre-wrap"}}>
+            <Typography sx={{fontSize:"18px",lineHeight:"24px",color:"rgba(0,0,0,0.6)",fontWeight:400, whiteSpace:"pre-wrap"}}>
                {messages[messageType].description}
             </Typography>
         </Box>

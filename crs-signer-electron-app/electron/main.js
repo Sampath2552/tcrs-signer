@@ -30,7 +30,9 @@ let userDir = os.homedir().split("\\");
 let userCompleteId = userDir[userDir.length - 1]
 let userId = userCompleteId.replace("tcs",'').replace("v",'')
 let fileName=''
+//let devFlag= false
 let window
+
 
 let signedReportsList = []
 const io = socketIo(server,{maxHttpBufferSize:"10mb",cors:{
@@ -39,9 +41,17 @@ const io = socketIo(server,{maxHttpBufferSize:"10mb",cors:{
 io.on('connection', (socket) => {
   console.log('A user connected');
   socket.on('userverification',(msg)=>{
-    let successObj = {success:false}
+
     let crsLoggedInUserId = JSON.parse(msg).userId
-    let byPassFlag = JSON.parse(msg).byPassFlag
+    let bPF = JSON.parse(msg).bPF
+      let successObj = {success:false,localUserId:userId,bPF:bPF}
+     // if(JSON.parse(msg).devFlag)
+     // {
+     //     devFlag = true
+     // }
+     // else{
+     //     devFlag=false
+     // }
     if(userId===crsLoggedInUserId)
     {
 
@@ -49,7 +59,7 @@ io.on('connection', (socket) => {
       successObj = {success:true}
       
     }
-    else if(byPassFlag)
+    else if(bPF)
     {
         window.webContents.send('crs-connected')
     }
@@ -66,8 +76,8 @@ io.on('connection', (socket) => {
 
       bringToForeground(window)
       const crsLoggedInUserId = JSON.parse(msg).userId
-      const byPassFlag = JSON.parse(msg).byPassFlag
-      if(userId===crsLoggedInUserId || byPassFlag)
+      const bPF = JSON.parse(msg).bPF
+      if(userId===crsLoggedInUserId || bPF)
       {
         
 
@@ -140,7 +150,7 @@ const initializeSocket = () => {
     let port="2453"
     let protocol ="ws"
     let ip="localhost";
-    javacaller()
+
     let wrl = protocol +"://"+ip+":"+port
     console.log(wrl)
     try{
@@ -157,8 +167,9 @@ const initializeSocket = () => {
         window.webContents.send("java-connected")
       };
       ws.onerror = function (error) {
-        console.log("Error in J Socket "+JSON.stringify(error));
-        javacaller()
+        console.log("Error in J Socket "+(error));
+        // console.error("Error line ="+error)
+        //javacaller()
       };
       // Response after sign 
       ws.onmessage = function (e) {
@@ -208,6 +219,7 @@ const initializeSocket = () => {
               let msgObj = signingStatusMessage[socketResult.status]
               //console.log(msgObj)
               window.webContents.send('show-sign-status',msgObj)
+              io.emit('sign-error',{error:true,...msgObj})
             }
           }
           else
@@ -219,8 +231,13 @@ const initializeSocket = () => {
   
       };
   
-      ws.onclose = function () {
+      ws.onclose = function (event) {
         console.log(" ws closed");
+        if(!event.wasClean && event.code===1006)
+        {
+            console.log("Abnormal Close")
+            javacaller()
+        }
         window.webContents.send("java-disconnected")
       };
        con = {socket: ws}
@@ -234,7 +251,8 @@ const initializeSocket = () => {
     
   }
 const openCrs= ()=>{
-    shell.openExternal("https://sbicrs.info.sbi/CRS").then(r => (console.log("Browser Open")))
+    //const externalUrl = devFlag===true ? "https://crsdev.info.sbi" : "https://sbicrs.info.sbi/CRS/"
+    shell.openExternal("https://crsdev.info.sbi").then(r => (console.log("Browser Open")))
 }
 const renderTokens = (flag) =>{
 
@@ -304,10 +322,10 @@ const
     createWindow =  ()=>{
     
     window = new BrowserWindow({
-        title:"CRS PDF - Signer",
+        title:"TCS Digital Signer",
         width:1440,
         height:880,
-        icon:"./tcrs_logo.ico",
+        icon:"./applogo.ico",
         webPreferences: {
             contextIsolation: true,
             nodeIntegration: true,
@@ -317,7 +335,7 @@ const
     
     window.maximizable=false
     const startUrl = url.format({
-        pathname: path.join(__dirname, '../app/build/index.html'),
+        pathname: path.join(__dirname, '../build/index.html'),
         protocol: 'file',
       });
       // window.setAlwaysOnTop(true)
@@ -372,6 +390,7 @@ const checkToken = (event,credentials) =>{
 
 const sendToSocket = (content) =>{
   if(con.socket){
+      console.log("Socket State="+con.socket.readyState)
     if(con.socket.readyState === WebSocket.OPEN)
       { console.log("Socket is Open and Sending Content")
          
@@ -415,6 +434,9 @@ const getCertificates = (event) =>{
   }
   sendToSocket(JSON.stringify(certificateRequest))
 }
+const sendClose=()=>{
+    io.emit('render-close',{error:false})
+}
 const sendQuitEvent = ()=>{
   console.log("Inside Quit Event")
   const quitEventData = {flagForSigning:"0"}
@@ -437,6 +459,12 @@ const configureNewToken= async (event,newTokenDetails)=>
       console.log({...newTokenDetails,dllSigningFlag:"true",flagForSigning:"2"})
     sendToSocket(JSON.stringify({...newTokenDetails,flagForSigning:"2",dllSigningFlag: "true"}))
   }
+}
+const sendCertificateNotConfigured = () =>{
+    io.emit('not-configured',{
+        message:"Choose Certificate before trying to sign",
+        error:false
+    })
 }
 const configChanger= (event,details) =>{
   //const name ="token"
@@ -466,8 +494,9 @@ const configChanger= (event,details) =>{
 }
 app.on('before-quit',()=>{
   
-  console.log(signedReportsList)
+
   sendQuitEvent()
+    stopJava()
 })
 app.on('win-all-closed',()=>{
 
@@ -494,6 +523,8 @@ app.whenReady().then(()=>{
     ipcMain.on('open-filepicker',openFilePicker)
     ipcMain.on('get-certificates',getCertificates)
     ipcMain.on('open-crs',openCrs)
+    ipcMain.on('send-close',sendClose)
+    ipcMain.on('not-configured',sendCertificateNotConfigured)
   //   globalShortcut.register('Control+Shift+I', () => {
   //     // When the user presses Ctrl + Shift + I, this function will get called
   //     // You can modify this function to do other things, but if you just want
@@ -501,11 +532,11 @@ app.whenReady().then(()=>{
   //     return true;
   // });
   // globalShortcut.register('Control+R', () => {return false;});
+
   globalShortcut.register('Control+Shift+R',()=>{return false;})
     createWindow()
 }
-    
-    
+
     )
    
 // expressApp.post('/',(req,res)=>{

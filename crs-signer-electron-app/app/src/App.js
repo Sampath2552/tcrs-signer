@@ -3,7 +3,7 @@ import Home from './components/Home.jsx'
 import SidePanel from './components/SidePanel.jsx';
 import CertificateList from './components/CertificateList.jsx';
 import LandingPage from './components/LandingPage.jsx';
-// import './App.css';
+import './App.css';
 
 function App() {
   return (

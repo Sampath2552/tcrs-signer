@@ -1,17 +1,17 @@
 {
-  "name": "tcrs-signer",
+  "name": "tcs-digital-signer",
   "version": "1.0.0",
   "main": "./electron/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "restart": "cd app && npm run build && cd .. && npm run start",
-    "build": "electron-packager . TCRS --platform=win32 --arch=x64 --icon=./tcrs_logo.ico --out=dist --overwrite"
+    "build": "electron-packager . TCS-Digital-Signer --platform=win32 --arch=x64 --icon=./appLogo.ico --out=dist --overwrite"
   },
   "keywords": [],
-  "author": "CRS",
+  "author": "TCS",
   "license": "ISC",
-  "description": "TCRS Signing Application",
+  "description": "TCS Digital Signing Application",
   "devDependencies": {
     "electron": "^33.0.1",
     "electron-packager": "^17.1.2",

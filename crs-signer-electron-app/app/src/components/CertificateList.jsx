@@ -1,11 +1,10 @@
-
-import React, { useEffect, useState } from 'react'
-import { Box,Button } from '@mui/material'
+import React, {useEffect, useState} from 'react'
+import {Box, Button} from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
-import { DataGrid } from '@mui/x-data-grid';
+import {DataGrid, GridOverlay} from '@mui/x-data-grid';
 import PropTypes from 'prop-types';
-import { alpha } from '@mui/material/styles';
+import {alpha} from '@mui/material/styles';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CancelTwoToneIcon from '@mui/icons-material/CancelTwoTone';
 import CheckCircleTwoToneIcon from '@mui/icons-material/CheckCircleTwoTone';
@@ -27,138 +26,155 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { visuallyHidden } from '@mui/utils';
+import {visuallyHidden} from '@mui/utils';
 import usbIcon from "../Asset/usb.png"
 import usbDriveIcon from "../Asset/usb-drive.png"
 
+function customNoRowsOverlay(){
+    return (
+        <GridOverlay>
+            <div> No Tokens found</div>
 
-function CertificateList({handleCertificateSelection,handleAddCertificateClick,certificatesList,getCertificates}) {
+        </GridOverlay>
+    )
+}
+function CertificateList({handleCertificateSelection, handleAddCertificateClick, certificatesList, getCertificates}) {
 
 
-    useEffect(()=>{
+    useEffect(() => {
 
-        console.log(certificatesList)
-    },[1])
+        console.log("Rendering Certificates List =" + certificatesList)
+    }, [1])
 
 
-  return (
-       <Box sx={{}}>
-         
-             <Button variant="contained" startIcon={<AutorenewIcon/>} onClick={()=>{getCertificates()}} sx={{marginBottom:"8px"}}> Refresh </Button>
-                <CertificateTable certificatesList={certificatesList} handleCertificateSelection={handleCertificateSelection}/>
-            <Typography sx={{marginTop:"12px",marginBottom:"12px"}}>
+    return (
+        <Box sx={{}}>
+
+            <Button variant="contained" startIcon={<AutorenewIcon/>} onClick={() => {
+                getCertificates()
+            }} sx={{marginBottom: "8px"}}> Refresh </Button>
+            <CertificateTable certificatesList={certificatesList}
+                              handleCertificateSelection={handleCertificateSelection}/>
+            <Typography sx={{marginTop: "12px", marginBottom: "12px"}}>
                 In case your certificate is not listed above click on [Add] to add manually.
             </Typography>
-             <Button variant="contained" endIcon={<AddIcon/>} color='error' onClick={()=>{
-                 console.log("Add Button Clicked")
-                 handleAddCertificateClick()
-             }} > ADD </Button>
-        
-       </Box>
-  )
+            <Button variant="contained" endIcon={<AddIcon/>} color='error' onClick={() => {
+                console.log("Add Button Clicked")
+                handleAddCertificateClick()
+            }}> ADD </Button>
+
+        </Box>
+    )
 
 }
-const CertificateTable = ({certificatesList,handleCertificateSelection})=>{
 
-const handleRowSelection = (selectedItem) =>{
-    console.log(selectedItem)
-    if(selectedItem.row.validity)
-    {
-        handleCertificateSelection(selectedItem.row)
+const CertificateTable = ({certificatesList, handleCertificateSelection}) => {
+
+    const handleRowSelection = (selectedItem) => {
+        console.log(selectedItem)
+        if (selectedItem.row.validity) {
+            handleCertificateSelection(selectedItem.row)
+        }
+        //window.alert(selectedItem)
+
     }
-    //window.alert(selectedItem)
 
-}
+    const columns = [
 
-const columns = [
-    
-  { field: 'issuedTo',
-      headerName: 'Issued To',
-      width: 150,
-        renderCell: (params)=>{
+        {
+            field: 'issuedTo',
+            headerName: 'Issued To',
+            width: 150,
+            renderCell: (params) => {
                 console.log(params)
                 return (
                     <Box>
-                        <img src={params.row.fromDll ? usbIcon : usbDriveIcon} height='16px' width='16px'  alt="usbicon"/> {params.row.issuedTo}
+                        <img src={params.row.fromDll ? usbIcon : usbDriveIcon} height='16px' width='16px'
+                             alt="usbicon"/> {params.row.issuedTo}
                     </Box>
                 )
-        }
-  },
-  {
-    field: 'issuedBy',
-    headerName: 'Issued By',
-    width: 200,
-  },
-  {
-    field: 'serialNo',
-    headerName: 'Serial No',
-    width: 150,
-
-  },
-  {
-    field: 'expirationDate',
-    headerName: 'Expiry Date',
-    
-    width: 110,
-
-  },
-    {
-        field:"validity",
-        headerName: "Is Valid",
-        width: "100",
-        renderCell : (params)=>{
-            return  params.row.validity ? <CheckCircleTwoToneIcon sx={{color:"green",marginTop:1.5}}/> : <CancelTwoToneIcon sx={{color:"red",marginTop:1.5}}/>
-        }
-    }
-  
-];
-
-
-
-
-  return (
-    <Box sx={{ height: 300, width: '100%' }}>
-      <DataGrid
-        rows={certificatesList}
-        columns={columns}
-        isRowSelectable={(params) => params.row.validity }
-        onRowClick={handleRowSelection}
-        getRowId={(row)=>row.alias}
-        initialState={{
-          pagination: {
-            paginationModel: {
-              pageSize: 5,
-            },
-          },
-        }}
-        sx={{
-            '& .flaggedRow': {
-                "backgroundColor":"#FFEEEE",
-
-                "cursor":"not-allowed",
-                "&:hover": {
-                    "backgroundColor":"#FFEEEE"
-
-                }
-
             }
-        }}
-        pageSizeOptions={[5]}
-        getRowClassName={(params)=>{
-           return  params.row.validity ? "" : "flaggedRow"
-        }}
-        
-      />
-    </Box>
-  );
+        },
+        {
+            field: 'issuedBy',
+            headerName: 'Issued By',
+            width: 200,
+        },
+        {
+            field: 'serialNo',
+            headerName: 'Serial No',
+            width: 150,
+
+        },
+        {
+            field: 'expirationDate',
+            headerName: 'Expiry Date',
+
+            width: 110,
+
+        },
+        {
+            field: "validity",
+            headerName: "Is Valid",
+            width: "100",
+            renderCell: (params) => {
+                return params.row.validity ? <CheckCircleTwoToneIcon sx={{color: "green", marginTop: 1.5}}/> :
+                    <CancelTwoToneIcon sx={{color: "red", marginTop: 1.5}}/>
+            }
+        }
+
+    ];
+
+
+    console.log("Certificates List in Rendering")
+
+
+    return (
+
+        <Box sx={{height: 300, width: '100%'}}>
+            <DataGrid
+                rows={[...new Map(certificatesList.map(item => [item.alias, item])).values()]}
+                columns={columns}
+                isRowSelectable={(params) => params.row.validity}
+                onRowClick={handleRowSelection}
+                disableColumnMenu={true}
+                disableColumnSorting={true}
+                slots ={ { noRowsOverlay:customNoRowsOverlay}}
+                getRowId={(row) => row.alias}
+                initialState={{
+
+
+                    pagination: {
+                        paginationModel: {
+                            pageSize: 5,
+                        },
+                    },
+                }}
+                sx={{
+                    '& .flaggedRow': {
+                        "backgroundColor": "#FFEEEE",
+
+                        "cursor": "not-allowed",
+                        "&:hover": {
+                            "backgroundColor": "#FFEEEE"
+
+                        }
+
+                    }
+                }}
+                pageSizeOptions={[5]}
+                getRowClassName={(params) => {
+                    return params.row.validity ? "" : "flaggedRow"
+                }}
+
+            />
+        </Box>
+    );
 }
 
 export default CertificateList
 
 
-  
-  
-  
 // function EnhancedTable() {
 //     const [order, setOrder] = React.useState('asc');
 //     const [orderBy, setOrderBy] = React.useState('calories');
@@ -166,13 +182,13 @@ export default CertificateList
 //     const [page, setPage] = React.useState(0);
 //     const [dense, setDense] = React.useState(false);
 //     const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  
+
 //     const handleRequestSort = (event, property) => {
 //       const isAsc = orderBy === property && order === 'asc';
 //       setOrder(isAsc ? 'desc' : 'asc');
 //       setOrderBy(property);
 //     };
-  
+
 //     const handleSelectAllClick = (event) => {
 //       if (event.target.checked) {
 //         const newSelected = rows.map((n) => n.id);
@@ -181,11 +197,11 @@ export default CertificateList
 //       }
 //       setSelected([]);
 //     };
-  
+
 //     const handleClick = (event, id) => {
 //       const selectedIndex = selected.indexOf(id);
 //       let newSelected = [];
-  
+
 //       if (selectedIndex === -1) {
 //         newSelected = newSelected.concat(selected, id);
 //       } else if (selectedIndex === 0) {
@@ -200,16 +216,15 @@ export default CertificateList
 //       }
 //       setSelected(newSelected);
 //     };
-  
-  
-  
+
+
 //     // Avoid a layout jump when reaching the last page with empty rows.
-   
-  
+
+
 //     return (
 //       <Box sx={{ overflow:"hidden", height:"300px" ,  }}>
 //         <Paper elevation={3} sx={{  mb: 2, height:"300px" } }>
-      
+
 //           <TableContainer>
 //             <Table
 //                stickyHeader 
@@ -224,8 +239,8 @@ export default CertificateList
 //           <TableCell padding="checkbox">
 //             <Checkbox
 //               color="primary"
-              
-            
+
+
 //               inputProps={{
 //                 'aria-label': 'select all desserts',
 //               }}
@@ -238,9 +253,9 @@ export default CertificateList
 //               padding={headCell.disablePadding ? 'none' : 'normal'}
 //               sortDirection={orderBy === headCell.id ? order : false}
 //             >
-              
+
 //                 {headCell.label}
-            
+
 //             </TableCell>
 //           ))}
 //         </TableRow>
@@ -252,7 +267,7 @@ export default CertificateList
 //                 {rows.map((row, index) => {
 //                   const isItemSelected = selected.includes(row.id);
 //                   const labelId = `enhanced-table-checkbox-${index}`;
-  
+
 //                   return (
 //                     <TableRow
 //                       hover
@@ -288,13 +303,13 @@ export default CertificateList
 //                     </TableRow>
 //                   );
 //                 })}
-               
+
 //               </TableBody>
 //             </Table>
 //           </TableContainer>
-  
+
 //         </Paper>
-    
+
 //       </Box>
 //     );
 //   }

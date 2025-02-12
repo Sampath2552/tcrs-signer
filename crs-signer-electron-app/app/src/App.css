@@ -1,11 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
-body
-{
-  background-image: url("wavy-lines.svg");
-  background: #000000;
-  background-size: cover ;
-  color: aliceblue;
-  align-items: center;
-  
+html {
+    scroll-behavior: smooth;
 }
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #E1E6EC;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #626970;
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    width: 8px;
+    height: 8px
+}
+
+

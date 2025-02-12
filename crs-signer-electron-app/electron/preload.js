@@ -1,4 +1,4 @@
-const { channel } = require('diagnostics_channel');
+
 const { contextBridge, ipcRenderer } = require('electron');
 const os = require('os');
 
@@ -20,5 +20,7 @@ contextBridge.exposeInMainWorld('signer',{
     checkToken: (credentials) => ipcRenderer.send('check-token',credentials) ,
     openFilePicker:()=>ipcRenderer.send('open-filepicker'),
     getCertificates:() => ipcRenderer.send('get-certificates'),
-    openCrs:() => ipcRenderer.send('open-crs')
+    openCrs:() => ipcRenderer.send('open-crs'),
+    sendClose:()=> ipcRenderer.send('send-close'),
+    sendCertificateNotConfigured:() => ipcRenderer.send('not-configured')
 })

@@ -29,8 +29,10 @@ import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 
 import {Alert} from "@mui/lab";
 import AddCertificate from "./AddCertificate";
-
+import {Image} from "react-bootstrap";
 function SignerSection() {
+
+
     const [snackOpen,setSnackOpen] = useState(false)
     const [snackMsg,setSnackMsg] = useState(null)
     const [messageType,setMessageType] = useState("start")
@@ -50,10 +52,13 @@ function SignerSection() {
     const [sendingToSigner,setSendingToSigner] = useState(false)
     const [displayAddCertificateScreen, setDisplayAddCertificateScreen] = useState(false)
     const [certificatesList,setCertificatesList] = useState([])
+    const [dllCertificatesList,setDllCertificatesList] = useState([])
     const [tokens,setTokens] = useState([])
+
     useEffect(()=>{
         window.electron.ipcRenderer.on("render-tokens", (response) => {
             console.log(JSON.stringify(response[0]))
+            // setRefreshingTokens(false)
             // window.alert(JSON.stringify(response[0]))
             if (response[0].status === '0') {
                 if (response[0].stdout !== "0\r\n") {
@@ -74,6 +79,7 @@ function SignerSection() {
             closeAll()
 
             let cert = JSON.parse(response[0])
+            setDllCertificatesList((prev)=>[...prev,cert])
             setCertificatesList((prev)=>[...prev,cert])
             setMessageType("certview")
             setCertificateToBeUsed(JSON.parse(response[0]))
@@ -82,7 +88,10 @@ function SignerSection() {
         })
 
     },[1])
-
+    const closePdfScreen = ()=>{
+        setRenderPdf(false)
+        window.signer.sendClose();
+    }
     const getCertificates = ()=>{
 
         window.signer.getCertificates()
@@ -99,9 +108,20 @@ function SignerSection() {
             if(response!=null && response.certs )
             {
                 console.log("Certificates Received = "+response.certs)
+                    console.log("Certificates Before Setting =")
+                    console.log(certificatesList)
+                if(dllCertificatesList.length>0)
+                {
+                    setCertificatesList([...dllCertificatesList,response.certs])
+                }
+                 else{
+
+
 
                     setCertificatesList(response.certs)
-
+                }
+                console.log("Certificates After Setting =")
+                console.log(certificatesList)
                 
             }
         })
@@ -131,17 +151,21 @@ function SignerSection() {
     }
     const openCertificateList = ()=>{
         closeAll()
+        console.log("Inside Open Certificate List")
+
+
+            setMessageType("certlist")
+
         setDisplayCertificateList(true)
-        setMessageType("certlist")
+
     }
     const handleStart= ()=>{
         console.log("Handling Start")
        /* setHeading(messages["certlist"].heading)
         setDescription(messages["certlist"].description)*/
-        setMessageType("certlist")
-        setDisplayCertificateList(true)
-        setDisplayLandingScreen(false)
-        getCertificates()
+
+        getCertificates();
+        openCertificateList();
     }
     const handleCertificateSelection = (certificate) =>{
         setCertificateToBeUsed(certificate)
@@ -161,8 +185,7 @@ function SignerSection() {
         setIsCertificateConfigured(false)
         localStorage.setItem("isCertificateConfigured","false")
         closeAll()
-        setDisplayCertificateList(true)
-        setMessageType("certlist")
+        openCertificateList()
     }
     const configureCertificate = ()=>{
         setIsCertificateConfigured(true)
@@ -177,8 +200,8 @@ function SignerSection() {
         }
     }
     const handleCertificateButtonClick = () =>{
-    closeAll()
 
+        closeAll()
         if(isCertificateConfigured)
         {
             setDisplayCertificateInfo(true)
@@ -187,10 +210,7 @@ function SignerSection() {
 
         }
         else {
-            setDisplayCertificateInfo(false)
-            setDisplayCertificateList(true)
-            setDisplayLandingScreen(false)
-            setMessageType("certlist")
+            openCertificateList();
         }
     }
     const openSigningScreen = () =>{
@@ -244,6 +264,12 @@ function SignerSection() {
 
     window.electron.ipcRenderer.on("crs-disconnected", () => {
         setIsApplicationConnected(false)
+        setSendingToSigner(false)
+        setSnackMsg({
+            "children":"Disconnected from CRS",
+            "severity":"error"
+        })
+        setSnackOpen(true)
         navigateConnection(false)
     })
         window.electron.ipcRenderer.on("render-pdf", (response) => {
@@ -253,7 +279,8 @@ function SignerSection() {
             if(localStorage.getItem("isCertificateConfigured")==="false" || localStorage.getItem("isCertificateConfigured")===null)
             {
                 openCertificateList()
-                setSnackMsg({children:"Configure Certificate before trying to sign",severity:"error"})
+                window.signer.sendCertificateNotConfigured()
+                setSnackMsg({children:"Choose certificate before trying to sign",severity:"error"})
                 setSnackOpen(true)
             }
            // setCrsLoggedInUserId(dataObject.userId)
@@ -276,11 +303,16 @@ function SignerSection() {
 
 
         })
+        window.electron.ipcRenderer.on('sending-to-socket',()=>{
+            console.log("Sending To Socket Event hit")
+            setSnackOpen(true)
+            setSnackMsg({children:"Report is Signed Successfully , wait till it is sent to CRS",severity:"success"})
+        })
         window.electron.ipcRenderer.on("acknowledgement-received", (response) => {
             setSendingToSigner(false)
             setSentToCrs(true)
             setSnackOpen(true)
-            setSnackMsg({children:"Signed Report Successfully Sent to CRS",severity:"success"})
+            setSnackMsg({children:"Report successfully sent to CRS. Signed report is saved at /Downloads/CRS/",severity:"success"})
         })
         window.electron.ipcRenderer.on("show-sign-status", (response) => {
 
@@ -289,6 +321,8 @@ function SignerSection() {
                 setSnackMsg({children:"Signing Failed.Please try again",
                                     severity:"error"})
                 setSendingToSigner(false)
+                setRenderPdf(false)
+
             }
             else
             {
@@ -304,6 +338,7 @@ function SignerSection() {
                 })
                 setSnackOpen(true)
                 setSendingToSigner(false)
+                setRenderPdf(false)
 
 
             }
@@ -315,17 +350,17 @@ function SignerSection() {
 
   return (
     <Box 
-    sx={{display:"flex",width:"712px",flexDirection:"column",gap:"20px",padding:"12px 64px"}}>
+    sx={{display:"flex",width:"836px",flexDirection:"column",gap:"20px",padding:"64px 64px"}}>
          <>
                 <ScreenHeader messageType={messageType}/>
 
-                <Box sx={{display:"flex",flexDirection:"column",width:"712px"}}>
+                <Box sx={{display:"flex",flexDirection:"column",width:"100%"}}>
                     <Box>
-                        <Box sx={{width:"712px",height:"404px"}}>
+                        <Box sx={{width:"100%",height:"404px"}}>
                             {displayCertificateList && <CertificateList  handleAddCertificateClick={handleAddCertificateClick} handleCertificateSelection = {handleCertificateSelection} certificatesList={certificatesList} getCertificates={getCertificates}/>}
                             {displayCertificateInfo && (certificateToBeUsed!=null) && <CertificateInfo  certificate={certificateToBeUsed} configureCertificate={configureCertificate} handleBack={handleBack}/>}
                             {displayApplicationScreen && <ApplicationConnection crsLoggedInUserId={crsLoggedInUserId} /> }
-                            {displayAddCertificateScreen && <AddCertificate handleBack={handleBack} tokens={tokens} handleAddCertificateClick={handleAddCertificateClick}/>}
+                            {displayAddCertificateScreen && <AddCertificate handleBack={handleBack} tokens={tokens} setTokens={setTokens} handleAddCertificateClick={handleAddCertificateClick} />}
                             {displaySigningScreen && <Signer isCertificateConfigured={isCertificateConfigured} isApplicationConnected={isApplicationConnected} crsLoggedInUserId={crsLoggedInUserId} certificateHolder={certificateToBeUsed.issuedTo}/>}
                         </Box>
                     </Box>
@@ -338,10 +373,10 @@ function SignerSection() {
             </>
 
         <Snackbar
-            open={snackOpen}
+            open={snackMsg !== null}
             anchorOrigin={{vertical:'top',horizontal:'right'}}
             onClose={()=>{
-                setSnackOpen(false)
+                /*setSnackOpen(false);*/
                 setSnackMsg(null)
             }}
             autoHideDuration={10000}
@@ -351,53 +386,54 @@ function SignerSection() {
                 {...snackMsg}
                 onClose={
                     ()=>{
-                        setSnackOpen(false)
+                        /*setSnackOpen(false);*/
                         setSnackMsg(null)
+
+
                     }
                 }
             />
-
-
         </Snackbar>
 
 
 
-                        < >
+
                             <Box>
-                                <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-                                          open={sendingToSigner} >
-                                    <CircularProgress/>
-                                </Backdrop>
+
                             </Box>
                             <SwipeableDrawer
                                 anchor="top"
                                 open={renderPdf && isApplicationConnected && isCertificateConfigured }
-                                onClose={()=>{setRenderPdf(false)}}
+                                onClose={()=>{closePdfScreen()}}
                                 // onClose={toggleDrawer(anchor, false)}
                                 // onOpen={toggleDrawer(anchor, true)}
                             >
-                                <Snackbar
-                                    open={snackOpen}
-                                    anchorOrigin={{vertical:'top',horizontal:'right'}}
-                                    onClose={()=>{
-                                        setSnackOpen(false)
-                                        setSnackMsg(null)
-                                    }}
-                                    autoHideDuration={10000}
-                                >
-                                    <Alert
-                                        variant="filled"
-                                        {...snackMsg}
-                                        onClose={
-                                            ()=>{
-                                                setSnackOpen(false)
-                                                setSnackMsg(null)
-                                            }
-                                        }
-                                    />
+                                {/*<Snackbar*/}
+                                {/*    open={snackOpen}*/}
+                                {/*    anchorOrigin={{vertical:'top',horizontal:'right'}}*/}
+                                {/*    onClose={()=>{*/}
+                                {/*        setSnackOpen(false)*/}
+                                {/*        setSnackMsg(null)*/}
+                                {/*    }}*/}
+                                {/*    autoHideDuration={10000}*/}
+                                {/*>*/}
+                                {/*    <Alert*/}
+                                {/*        variant="filled"*/}
+                                {/*        {...snackMsg}*/}
+                                {/*        onClose={*/}
+                                {/*            ()=>{*/}
+                                {/*                setSnackOpen(false)*/}
+                                {/*                setSnackMsg(null)*/}
+                                {/*            }*/}
+                                {/*        }*/}
+                                {/*    />*/}
 
-
-                                </Snackbar>
+                                <Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+                                          open={sendingToSigner} >
+                                    <CircularProgress/>
+                                    {/*<Image width="200px" height="200px" src="./Assets/signing.gif"/>*/}
+                                </Backdrop>
+                                {/*</Snackbar>*/}
                                 <Typography sx={{fontSize:"28px",fontWeight:400,color:"rgba(0,0,0,0.87)",marginLeft:10}}> {sentToCrs ?  "Signing Complete" : "Sign"} </Typography>
                                 <Typography sx={{fontSize:"16px",lineHeight:"24px",color:"rgba(0,0,0,0.87)",fontWeight:400,marginLeft:10, whiteSpace:"pre-wrap"}}>
 
@@ -407,11 +443,12 @@ function SignerSection() {
                                         <Box sx={{  msOverflowStyle:"none",scrollbarWidth:"none",overflowY:"scroll",marginLeft: 3,marginRight:3,marginTop:1,marginBottom:1, p: 2,paddingTop:0, overflow:"auto",  height:"75vh", borderRadius: 5, WebkitOverflowScrolling:"none" }}>
 
                                             {(pdfData!==null) ? (<PdfViewer pdfData={pdfData}/>) : ''}
-                                            <Box sx={{position:"absolute",right:"85px",bottom:"16px",'& > :not(style)': { m: 1 }}} >
+                                            <Box sx={{position:"absolute",right:"85px",bottom:"20px",'& > :not(style)': { m: 1 }}} >
                                                 {
                                                     sentToCrs===false ? (<>
                                                         <Fab  onClick={()=>{
-                                                            setRenderPdf(false)
+                                                           closePdfScreen()
+
                                                         }}  size="medium"  aria-label="add">
                                                             <CloseIcon />
                                                         </Fab>
@@ -431,7 +468,7 @@ function SignerSection() {
                                             </Box>
                                 </Box>
                             </SwipeableDrawer>
-                        </>
+
 
 
 
@@ -449,7 +486,9 @@ function SignerSection() {
                     display: "flex",
                     width:"60%",
                     justifyContent: "center",
-                    alignItems: "center"
+                    alignItems: "center",
+                    marginLeft: "10px "
+
                 }}
                 showLabels
             >

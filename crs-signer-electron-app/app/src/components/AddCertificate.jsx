@@ -24,8 +24,10 @@ import {Alert} from "@mui/lab";
 import CancelIcon from "@mui/icons-material/Cancel";
 import CloseIcon from "@mui/icons-material/Close";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
+import CircularProgress from "@mui/material/CircularProgress";
+import Backdrop from "@mui/material/Backdrop";
 
-const AddCertificate = ({handleBack,tokens})=>{
+const AddCertificate = ({handleBack,tokens,setTokens})=>{
     const [showPassword, setShowPassword] = React.useState(false);
     const [selectedToken,setSelectedToken] = useState('')
     const [selectedFilePath, setSelectedFilePath] = useState('');
@@ -34,11 +36,15 @@ const AddCertificate = ({handleBack,tokens})=>{
     const [slotIndex,setSlotIndex] = useState(0)
     const [snackOpen,setSnackOpen] = useState(false)
     const [snackMsg,setSnackMsg] = useState({})
+
     const handleChangePassword = (e)=>{
         setPassword(e.target.value)
     }
     const refreshTokens = () => {
+        setTokens([])
         window.signer.refreshTokens()
+        // setRefreshingTokens(true)
+
     }
     const handleChange = (e)=>{
 
@@ -105,9 +111,32 @@ const AddCertificate = ({handleBack,tokens})=>{
             }
 
         })
+        window.electron.ipcRenderer.on("render-tokens", (response) => {
+            console.log(JSON.stringify(response[0]))
+
+                //setRefreshingTokens(false)
+
+            // window.alert(JSON.stringify(response[0]))
+            if (response[0].status === '0') {
+                if (response[0].stdout !== "0\r\n") {
+                    console.log(response[0].stdout)
+                    let tokens = response[0].stdout.split("0\r\n")
+
+                    tokens.pop()
+                    setTokens(tokens)
+
+                }
+
+            }
+
+        })
     },[1])
     return (
         <>
+            {/*<Backdrop sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}*/}
+            {/*          open={refreshingTokens} >*/}
+            {/*    <CircularProgress/>*/}
+            {/*</Backdrop>*/}
         <Grid container spacing = {2}>
             <Button variant="contained" startIcon={<AutorenewIcon/>} onClick={refreshTokens}> Refresh</Button>
             <Grid size={12}>
@@ -120,6 +149,9 @@ const AddCertificate = ({handleBack,tokens})=>{
                        label="Select Token"
                        onChange={handleChange}
                    >
+                       {tokens.length===0 && <MenuItem>
+                           No Tokens found
+                       </MenuItem>}
                        {tokens.map((name, index) => (
                            <MenuItem
                                key={name}
@@ -133,8 +165,8 @@ const AddCertificate = ({handleBack,tokens})=>{
                </FormControl>
             </Grid>
             <Grid size={4}>
-                <FormControl  variant="outlined">
-                    <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+                <FormControl fullWidth  variant="outlined">
+                    <InputLabel htmlFor="outlined-adornment-password">Token Password</InputLabel>
                     <OutlinedInput
                         id="outlined-adornment-password"
                         type={showPassword ? 'text' : 'password'}
@@ -153,16 +185,16 @@ const AddCertificate = ({handleBack,tokens})=>{
                             </InputAdornment>
                         }
                         onBlur={handleChangePassword}
-                        label="Password"
+                        label="Token Password"
                     />
                 </FormControl>
             </Grid>
             <Grid size={8}>
 
-                <FormControl  variant="outlined" sx={{width:'100%'}}>
-                    <InputLabel htmlFor="outlined-adornment-password">.dll File Path</InputLabel>
+                <FormControl variant="outlined" sx={{width:'100%'}}>
+                    <InputLabel htmlFor="outlined-adornment-file">.dll File Path</InputLabel>
                     <OutlinedInput
-                        id="outlined-adornment-password"
+                        id="outlined-adornment-file"
                         type= 'text'
                         value= {selectedFilePath}
                         endAdornment={

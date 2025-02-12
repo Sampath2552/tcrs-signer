@@ -1,10 +1,14 @@
 // const { JavaCaller } = require("java-caller");
 
 const {exec} = require("child_process")
-const { resolve } = require("path")
+
+//Local
+//const url = "./electron/Tcrs.jar"
+//Build
+const url = "./resources/app/electron/Tcrs.jar"
 let tokencaller = ()=>{
     return new Promise((resolve,reject)=>{
-        exec('java -cp ./electron/Tcrs.jar com.tcs.sign.TokenDetector',(error,stdout,stderr)=>{
+        exec(`java -cp ${url} com.tcs.sign.TokenDetector`,(error, stdout, stderr)=>{
             if(error) {
                 reject(`Error: ${error.message}`)
                 return
@@ -19,24 +23,5 @@ let tokencaller = ()=>{
         })
     })
 }
-// let tokencaller = ()=>{
-//    let programDetails=  {status:"",stdout:"",stderr:""}
-//   exec('java -cp ElectronSign.jar com.tcs.sign.TokenDetector',
-// function (error, stdout, stderr){
-//     console.log(stdout)
-   
-//     programDetails.stdout=stdout
-//     programDetails.stderr=stderr
-// });
-//     console.log("Inside tokencaller="+programDetails)
-//     return programDetails
-// }
-// let tokencaller = async()=>{
-// const java = new JavaCaller({
-//     classPath: 'ElectronSign.jar',
-//     mainClass: 'com.tcs.sign.TokenDetector'
-// });
-// const { status, stdout, stderr } = await java.run();
-//  return {status,stdout,stderr}
-// }
+
 module.exports = tokencaller

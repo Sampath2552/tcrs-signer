@@ -2,9 +2,13 @@
 
 const {exec} = require("child_process")
 const { resolve } = require("path")
+//Local
+//const url = "./electron/Tcrs.jar"
+//Build
+const url = "./resources/app/electron/Tcrs.jar"
 let tokenverifier = (password)=>{
     return new Promise((resolve,reject)=>{
-        exec(`java -cp ./electron/Tcrs.jar com.tcs.sign.TokenVerifier "${password}"`,(error,stdout,stderr)=>{
+        exec(`java -cp ${url} com.tcs.sign.TokenVerifier "${password}"`,(error,stdout,stderr)=>{
             if(error) {
                 reject(`Error: ${error.message}`)
                 return

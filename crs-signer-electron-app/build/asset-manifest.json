@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "./static/css/main.bb02f91d.css",
-    "main.js": "./static/js/main.121b5a7f.js",
+    "main.css": "./static/css/main.b2904193.css",
+    "main.js": "./static/js/main.9251667f.js",
     "static/js/453.5565870f.chunk.js": "./static/js/453.5565870f.chunk.js",
     "static/media/usb-drive.png": "./static/media/usb-drive.64ea14ee5cec997882e6.png",
     "index.html": "./index.html",
-    "main.bb02f91d.css.map": "./static/css/main.bb02f91d.css.map",
-    "main.121b5a7f.js.map": "./static/js/main.121b5a7f.js.map",
+    "main.b2904193.css.map": "./static/css/main.b2904193.css.map",
+    "main.9251667f.js.map": "./static/js/main.9251667f.js.map",
     "453.5565870f.chunk.js.map": "./static/js/453.5565870f.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.bb02f91d.css",
-    "static/js/main.121b5a7f.js"
+    "static/css/main.b2904193.css",
+    "static/js/main.9251667f.js"
   ]
 }

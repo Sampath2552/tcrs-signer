@@ -41,8 +41,8 @@ public class ServerEndPointServlet {
     public void handleMessage(String incomingMessage) {
         // Get the Incoming Message
         JSONObject jsonIncomingObject = new JSONObject(incomingMessage);
-        System.out.println(incomingMessage);
-        System.out.println(jsonIncomingObject);
+//        System.out.println(incomingMessage);
+//        System.out.println(jsonIncomingObject);
         /*
         * flagForSigning = 1 -> Continue with signing process
         * flagForSigning = 2 -> give list of certificates present in windows-my
@@ -89,12 +89,12 @@ public class ServerEndPointServlet {
                             System.out.println("Inside alias flow");
                             String alias = jsonIncomingObject.getString("alias");
                             Map<String,Object> signedMap =  SignAtBookmarks.configureSignatureForByteArrayWithWindowsMy("", barr , role,alias);
-                            System.out.println(signedMap.get("signedContent"));
+                           // System.out.println(signedMap.get("signedContent"));
 
                             System.out.println("Incoming map multiple flag =" + jsonIncomingObject.getString("multiSignFlag"));
                             String multiSignFlag = jsonIncomingObject.getString("multiSignFlag");
                             String reportId = jsonIncomingObject.getString("reportId");
-                            System.out.println(Base64.getEncoder().encodeToString((byte[]) signedMap.get("signedContent")).length());
+                           // System.out.println(Base64.getEncoder().encodeToString((byte[]) signedMap.get("signedContent")).length());
                             jsonOutgoingObject = ServerEndPointServlet.jsonCreator(multiSignFlag,reportId,signedMap);
                             jsonOutgoingObject.put("methodUsed","Windows-My");
                             System.out.println("JSOn Outgoing Object Recevied from JSON creator = "+jsonOutgoingObject.toString());
@@ -111,9 +111,9 @@ public class ServerEndPointServlet {
                 }
 
 
-            System.out.println("Object being sent ="+jsonOutgoingObject.toString());
+           // System.out.println("Object being sent ="+jsonOutgoingObject.toString());
             if(!jsonOutgoingObject.isEmpty())
-            {   System.out.println("Object being sent ="+jsonOutgoingObject);
+            {   //System.out.println("Object being sent ="+jsonOutgoingObject);
                 ServerEndPointServlet.messageSender(jsonOutgoingObject.toString());
             }
 
@@ -157,7 +157,7 @@ public class ServerEndPointServlet {
     public static void messageSender(String resultantMessage)  {
 
         try {
-            System.out.println(resultantMessage);
+           // System.out.println(resultantMessage);
             currentUserSession.getRemote().sendString(resultantMessage);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -186,7 +186,12 @@ public class ServerEndPointServlet {
             tempJsonOutgoingObject.put("status","113");
         } else if (signProcessFlag ==4) {
             tempJsonOutgoingObject.put("status","114");
-        } else
+        }
+        else if(signProcessFlag==5)
+        {
+            tempJsonOutgoingObject.put("status","115");
+        }
+        else
         {
             tempJsonOutgoingObject.put("status","110");
         }

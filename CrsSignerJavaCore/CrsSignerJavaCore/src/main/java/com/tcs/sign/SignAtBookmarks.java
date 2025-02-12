@@ -279,7 +279,6 @@ public class SignAtBookmarks {
                     height = bbox.getWidth();
                     break;
                 case 0:
-
                 default:
                     break;
             }
@@ -329,9 +328,9 @@ public class SignAtBookmarks {
                 }
                 // show background (just for debugging, to see the rect size + position)
                 cs.drawImage(imageXObject, 0, 0,130,50);
-                cs.setNonStrokingColor(Color.YELLOW);
-                cs.addRect(-5000, -5000, 10000, 10000);
-                cs.fill();
+//                cs.setNonStrokingColor(Color.YELLOW);
+//                cs.addRect(-5000, -5000, 10000, 10000);
+//                cs.fill();
                 cs.setNonStrokingColor(Color.BLACK);
                 // show text
                 float fontSize = 6;
@@ -353,19 +352,7 @@ public class SignAtBookmarks {
                 String signedByText =  name;
 //                addParagraph(cs,sx,sy,8,width,signedByText);
                 System.out.println(signedByText);
-//                List<List<String>>  paragraph = new ArrayList<>();
-//                paragraph.add(wrapString(signedByText,pixelWidth,font,(int) fontSize));
-//                paragraph.add(wrapString("Date:"+ date+" "+time+"",pixelWidth,font,(int) fontSize));
-//                paragraph.add(wrapString(reason,pixelWidth,font,(int) fontSize));
-//                paragraph.add(wrapString(location,pixelWidth,font,(int) fontSize));
-//                for(List<String> lines:paragraph)
-//                {
-//                    for(String line:lines)
-//                    {
-//                        cs.showText(line);
-//                        cs.newLine();
-//                    }
-//                }
+
                 cs.showText("Signed By:");
                 cs.newLine();
                 System.out.println("Signed By ="+ signedByText);
@@ -379,6 +366,7 @@ public class SignAtBookmarks {
 //                cs.newLine();
                 cs.endText();
                 cs.close();
+                System.out.println("Printing Rectangle Properties:");
                 System.out.println(rect.getLowerLeftX());
                 System.out.println(rect.getLowerLeftY());
                 System.out.println(rect.getUpperRightX());
@@ -406,11 +394,7 @@ public class SignAtBookmarks {
         System.out.println("Page Rotation="+page.getRotation());
         switch (page.getRotation())
         {
-            case 0:
-                rect.setLowerLeftY(y+height);
-                rect.setUpperRightY(y);
-                rect.setLowerLeftX(x);
-                rect.setUpperRightX(x+width);
+
             case 90:
 
                 rect.setLowerLeftY(x);
@@ -430,9 +414,17 @@ public class SignAtBookmarks {
                 rect.setLowerLeftX(pageRect.getWidth() - y - height);
                 rect.setUpperRightX(pageRect.getWidth() - y);
                 break;
-
+            case 0:
+                rect.setLowerLeftX(x);
+                rect.setUpperRightX(x+width);
+                rect.setLowerLeftY(y);
+                rect.setUpperRightY(y+height);
+                break;
             default:
-
+                rect.setLowerLeftX(x);
+                rect.setUpperRightX(x + width);
+                rect.setLowerLeftY(pageRect.getHeight() - y - height);
+                rect.setUpperRightY(pageRect.getHeight() - y);
                 break;
         }
         return rect;
@@ -488,14 +480,21 @@ public class SignAtBookmarks {
         InputStream imageStream = null;
 //        ByteArrayInputStream bais = new ByteArrayInputStream(barr);
         BookMark currentBookmark = ExtractBookmarks.extractSpecificBookmarkFromByteArray(barr, role);
+        if(currentBookmark==null)
+        {
+            System.out.println("No Bookmark Present");
+            signingMap.put("signProcessFlag",5);
+            return signingMap;
 
+
+        }
 
         float rectWidth = 130;
         float rectHeight = 50;
+        int rotation =  doc.getPage(0).getRotation();
 
-
-        assert currentBookmark != null;
-        Rectangle2D humanRect = new Rectangle2D.Float(currentBookmark.getX(),currentBookmark.getY(), rectWidth, rectHeight);
+        Rectangle2D humanRect = rotation==0 ? new Rectangle2D.Float(currentBookmark.getY(),currentBookmark.getX(), rectWidth, rectHeight)   :
+                new Rectangle2D.Float(currentBookmark.getX(),currentBookmark.getY(), rectWidth, rectHeight);
         PDRectangle rect = createSignatureRectangle(doc,humanRect);
         int noOfPages = doc.getNumberOfPages();
         int lastPage = noOfPages -1;
@@ -635,16 +634,26 @@ public class SignAtBookmarks {
         InputStream imageStream = null;
 //        ByteArrayInputStream bais = new ByteArrayInputStream(barr);
         BookMark currentBookmark = ExtractBookmarks.extractSpecificBookmarkFromByteArray(barr, role);
-       System.out.println(currentBookmark.toString());
+      System.out.println("Before Printing Current Bookmark");
+      System.out.println(currentBookmark==null);
+
         if(currentBookmark==null)
         {
             System.out.println("No Bookmark Present");
+            signingMap.put("signProcessFlag",5);
+            return signingMap;
+
+
         }
 
         float rectWidth = 130;
         float rectHeight = 50;
 
-        Rectangle2D humanRect = new Rectangle2D.Float(currentBookmark.getX(),currentBookmark.getY(), rectWidth, rectHeight);
+        int rotation =  doc.getPage(0).getRotation();
+
+        Rectangle2D humanRect = rotation==0 ? new Rectangle2D.Float(currentBookmark.getY(),currentBookmark.getX(), rectWidth, rectHeight)   :
+                new Rectangle2D.Float(currentBookmark.getX(),currentBookmark.getY(), rectWidth, rectHeight);
+
         PDRectangle rect = createSignatureRectangle(doc,humanRect);
         int noOfPages = doc.getNumberOfPages();
         int lastPage = noOfPages -1;
@@ -707,7 +716,7 @@ public class SignAtBookmarks {
         byte[] barr = Base64.getDecoder().decode(base64String);
         System.out.println("In MAIn");
         for(int i=0;i<1;i++)
-        {  byte[] b= (byte[]) SignAtBookmarks.configureSignatureForByteArrayWithWindowsMy("Password123", barr, "checker","ANIL BABU KAYALORATH").get("signedContent");
+        {  byte[] b= (byte[]) SignAtBookmarks.configureSignatureForByteArrayWithWindowsMy("Password123", barr, "auditor","ANIL BABU KAYALORATH").get("signedContent");
             System.out.println(Base64.getEncoder().encodeToString(b));
             File file = new File("C:\\Users\\ACER\\Desktop\\SignedFiles\\file.pdf");
             FileOutputStream fos = new FileOutputStream(file);
