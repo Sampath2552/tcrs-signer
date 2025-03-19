@@ -8,7 +8,7 @@ const tokencaller = require("./tokendetector")
 const configUpdater = require("./configupdater")
 const tokenverifer = require("./tokenverifier")
 const {WebSocket}= require("ws");
-const exp = require("constants");
+
 const express = require('express')
 const cors = require('cors')
 const http = require('http');
@@ -17,9 +17,9 @@ const { dialog } = require("electron");
 const {createPdf} = require("./pdfwriter")
 const {EventEmitter} = require("events");
 const { json } = require("stream/consumers");
-const { report } = require("process");
+
 const {signingStatusMessage,certificateExtractionMessages} = require("./messages")
-const emitter = new EventEmitter()
+
 const expressApp = express()
 expressApp.use(cors());
 expressApp.use(express.json({ limit: '50mb'}));
@@ -38,25 +38,38 @@ let signedReportsList = []
 const io = socketIo(server,{maxHttpBufferSize:"10mb",cors:{
   origin:"*",
 }})
+const getIpAddress = ()=>{
+    const networkInterfaces = os.networkInterfaces()
+    for(const interfaceName in networkInterfaces)
+    {
+        for(const addressInfo of networkInterfaces[interfaceName])
+        {
+            if(addressInfo.family==="IPv4" && !addressInfo.internal)
+            {
+                return addressInfo.address
+            }
+        }
+    }
+    return "invalid"
+}
 io.on('connection', (socket) => {
   console.log('A user connected');
+  const clientIpAddress = socket.handshake.address
+    console.log(clientIpAddress)
   socket.on('userverification',(msg)=>{
 
     let crsLoggedInUserId = JSON.parse(msg).userId
     let bPF = JSON.parse(msg).bPF
-      let successObj = {success:false,localUserId:userId,bPF:bPF}
-     // if(JSON.parse(msg).devFlag)
-     // {
-     //     devFlag = true
-     // }
-     // else{
-     //     devFlag=false
-     // }
+
+      let ipAddress = getIpAddress()
+      let successObj = {success:false,localUserId:userId,bPF:bPF,ipAddress}
+
+
     if(userId===crsLoggedInUserId)
     {
 
       window.webContents.send('crs-connected')
-      successObj = {success:true}
+
       
     }
     else if(bPF)
@@ -252,7 +265,7 @@ const initializeSocket = () => {
   }
 const openCrs= ()=>{
     //const externalUrl = devFlag===true ? "https://crsdev.info.sbi" : "https://sbicrs.info.sbi/CRS/"
-    shell.openExternal("https://crsdev.info.sbi").then(r => (console.log("Browser Open")))
+    shell.openExternal("https://crsuat.info.sbi").then(r => (console.log("Browser Open")))
 }
 const renderTokens = (flag) =>{
 

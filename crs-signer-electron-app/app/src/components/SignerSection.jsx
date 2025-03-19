@@ -8,7 +8,7 @@ import {
     BottomNavigation,
     BottomNavigationAction,
     Paper,
-    Snackbar
+    Snackbar, CardMedia
 } from "@mui/material"
 import SendIcon from "@mui/icons-material/Send"
 import ArticleIcon from "@mui/icons-material/Article"
@@ -357,6 +357,7 @@ function SignerSection() {
                 <Box sx={{display:"flex",flexDirection:"column",width:"100%"}}>
                     <Box>
                         <Box sx={{width:"100%",height:"404px"}}>
+                            {displayLandingScreen &&  <CardMedia component="img" image="./Assets/welcome.svg" sx={{width: "100%", height: "404px"}}></CardMedia>}
                             {displayCertificateList && <CertificateList  handleAddCertificateClick={handleAddCertificateClick} handleCertificateSelection = {handleCertificateSelection} certificatesList={certificatesList} getCertificates={getCertificates}/>}
                             {displayCertificateInfo && (certificateToBeUsed!=null) && <CertificateInfo  certificate={certificateToBeUsed} configureCertificate={configureCertificate} handleBack={handleBack}/>}
                             {displayApplicationScreen && <ApplicationConnection crsLoggedInUserId={crsLoggedInUserId} /> }
@@ -364,7 +365,7 @@ function SignerSection() {
                             {displaySigningScreen && <Signer isCertificateConfigured={isCertificateConfigured} isApplicationConnected={isApplicationConnected} crsLoggedInUserId={crsLoggedInUserId} certificateHolder={certificateToBeUsed.issuedTo}/>}
                         </Box>
                     </Box>
-                    <Box sx={{marginTop:"12px",display:"flex",justifyContent:"center",alignItems:"center"}}>
+                    <Box sx={{marginTop:"2px",display:"flex",justifyContent:"center",alignItems:"center"}}>
 
                         {displayLandingScreen&&<Button sx={{position:"fixed"}} variant="contained" endIcon={<SendIcon/>} onClick={handleStart}>LET'S GO</Button>}
 

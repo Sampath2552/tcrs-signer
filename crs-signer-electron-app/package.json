@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "restart": "cd app && npm run build && cd .. && npm run start",
-    "build": "electron-packager . TCS-Digital-Signer --platform=win32 --arch=x64 --icon=./appLogo.ico --out=dist --overwrite"
+    "build": "electron-packager . TCS-Digital-Signer --platform=win32 --arch=x64 --icon=./appLogo.ico --out=dist --overwrite --appCopyright=\"2025 © Tata Consultancy Services\""
   },
   "keywords": [],
   "author": "TCS",

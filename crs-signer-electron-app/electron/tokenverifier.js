@@ -6,9 +6,9 @@ const { resolve } = require("path")
 //const url = "./electron/Tcrs.jar"
 //Build
 const url = "./resources/app/electron/Tcrs.jar"
-let tokenverifier = (password)=>{
+let tokenverifier = (val)=>{
     return new Promise((resolve,reject)=>{
-        exec(`java -cp ${url} com.tcs.sign.TokenVerifier "${password}"`,(error,stdout,stderr)=>{
+        exec(`java -cp ${url} com.tcs.sign.TokenVerifier "${val}"`,(error,stdout,stderr)=>{
             if(error) {
                 reject(`Error: ${error.message}`)
                 return
@@ -16,7 +16,7 @@ let tokenverifier = (password)=>{
             if(stderr)
             {
                 reject(`stderr: ${stderr}`)
-                console.log(stderr)
+
                 return
             }
             stdout = stdout.replace("\r\n","")
