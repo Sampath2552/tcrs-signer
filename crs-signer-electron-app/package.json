@@ -1,17 +1,17 @@
 {
-  "name": "tcs-digital-signer",
+  "name": "crs-digital-signer",
   "version": "1.0.0",
   "main": "./electron/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "restart": "cd app && npm run build && cd .. && npm run start",
-    "build": "electron-packager . TCS-Digital-Signer --platform=win32 --arch=x64 --icon=./appLogo.ico --out=dist --overwrite --appCopyright=\"2025 © Tata Consultancy Services\""
+    "build": "electron-packager . \"CRS Digital Signer\" --platform=win32 --arch=x64 --icon=./appLogo.ico --out=dist --overwrite --appCopyright=\"2025 © Tata Consultancy Services\""
   },
   "keywords": [],
   "author": "TCS",
   "license": "ISC",
-  "description": "TCS Digital Signing Application",
+  "description": "CRS Digital Signing Application",
   "devDependencies": {
     "electron": "^33.0.1",
     "electron-packager": "^17.1.2",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "electron-log": "^5.3.2",
     "express": "^4.21.1",
     "socket.io": "^4.8.0",
     "ws": "^8.18.0"

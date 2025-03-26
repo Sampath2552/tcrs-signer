@@ -32,7 +32,7 @@ export default function Navbar({handleClickSettings}) {
             <AppBar  sx={{position:"sticky", top: "0"}} color="primary">
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1, textAlign: "left" }}>
-                        TCRS Signer
+                        TCS Digital  Signer
                     </Typography>
                     <Typography color="inherit" sx={{ mr: 2 }}>{userId}</Typography>
                     <TimelineDot style={{margin: '24px 0px 11.5px'}} color={(javaStatus===true)?"success":"error"}/>

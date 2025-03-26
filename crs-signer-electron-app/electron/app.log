@@ -1,0 +1,154 @@
+[2025-03-25 17:35:48.547] [info]  Server Listening on Port 8555
+[2025-03-25 17:35:48.562] [info]  Server 123123
+[2025-03-25 17:35:50.124] [info]  Error: Command failed: java -cp ./resources/app/electron/Tcrs.jar com.tcs.sign.TokenDetector
+Error: Could not find or load main class com.tcs.sign.TokenDetector
+
+[2025-03-25 17:35:51.972] [info]  ws://localhost:2453
+[2025-03-25 17:35:52.077] [info]  Error in J Socket [object Object]
+[2025-03-25 17:35:52.080] [info]   ws closed
+[2025-03-25 17:35:52.082] [info]  Abnormal Close
+[2025-03-25 17:38:40.839] [info]  Socket State=3
+[2025-03-25 17:38:40.843] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:38:40.846] [info]  ws://localhost:2453
+[2025-03-25 17:38:40.854] [info]  Error in J Socket [object Object]
+[2025-03-25 17:38:40.856] [info]   ws closed
+[2025-03-25 17:38:40.857] [info]  Abnormal Close
+[2025-03-25 17:38:43.422] [info]  Socket State=3
+[2025-03-25 17:38:43.424] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:38:43.427] [info]  ws://localhost:2453
+[2025-03-25 17:38:43.433] [info]  Error in J Socket [object Object]
+[2025-03-25 17:38:43.435] [info]   ws closed
+[2025-03-25 17:38:43.436] [info]  Abnormal Close
+[2025-03-25 17:38:45.859] [info]  Socket State=3
+[2025-03-25 17:38:45.861] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:38:45.863] [info]  ws://localhost:2453
+[2025-03-25 17:38:45.870] [info]  Error in J Socket [object Object]
+[2025-03-25 17:38:45.872] [info]   ws closed
+[2025-03-25 17:38:45.875] [info]  Abnormal Close
+[2025-03-25 17:38:48.440] [info]  Socket State=3
+[2025-03-25 17:38:48.443] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:38:48.445] [info]  ws://localhost:2453
+[2025-03-25 17:38:48.452] [info]  Error in J Socket [object Object]
+[2025-03-25 17:38:48.454] [info]   ws closed
+[2025-03-25 17:38:48.456] [info]  Abnormal Close
+[2025-03-25 17:38:50.872] [info]  Socket State=3
+[2025-03-25 17:38:50.874] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:38:50.877] [info]  ws://localhost:2453
+[2025-03-25 17:38:50.883] [info]  Error in J Socket [object Object]
+[2025-03-25 17:38:50.885] [info]   ws closed
+[2025-03-25 17:38:50.887] [info]  Abnormal Close
+[2025-03-25 17:38:53.455] [info]  Socket State=3
+[2025-03-25 17:38:53.457] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:38:53.459] [info]  ws://localhost:2453
+[2025-03-25 17:38:53.462] [info]  Error in J Socket [object Object]
+[2025-03-25 17:38:53.463] [info]   ws closed
+[2025-03-25 17:38:53.463] [info]  Abnormal Close
+[2025-03-25 17:38:55.887] [info]  Socket State=3
+[2025-03-25 17:38:55.890] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:38:55.892] [info]  ws://localhost:2453
+[2025-03-25 17:38:55.898] [info]  Error in J Socket [object Object]
+[2025-03-25 17:38:55.900] [info]   ws closed
+[2025-03-25 17:38:55.903] [info]  Abnormal Close
+[2025-03-25 17:38:58.468] [info]  Socket State=3
+[2025-03-25 17:38:58.471] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:38:58.473] [info]  ws://localhost:2453
+[2025-03-25 17:38:58.483] [info]  Error in J Socket [object Object]
+[2025-03-25 17:38:58.485] [info]   ws closed
+[2025-03-25 17:38:58.488] [info]  Abnormal Close
+[2025-03-25 17:39:00.901] [info]  Socket State=3
+[2025-03-25 17:39:00.903] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:39:00.906] [info]  ws://localhost:2453
+[2025-03-25 17:39:00.908] [info]  Error in J Socket [object Object]
+[2025-03-25 17:39:00.909] [info]   ws closed
+[2025-03-25 17:39:00.910] [info]  Abnormal Close
+[2025-03-25 17:39:03.480] [info]  Socket State=3
+[2025-03-25 17:39:03.482] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:39:03.484] [info]  ws://localhost:2453
+[2025-03-25 17:39:03.489] [info]  Error in J Socket [object Object]
+[2025-03-25 17:39:03.490] [info]   ws closed
+[2025-03-25 17:39:03.491] [info]  Abnormal Close
+[2025-03-25 17:39:04.513] [info]  Socket State=3
+[2025-03-25 17:39:04.529] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:39:04.549] [info]  ws://localhost:2453
+[2025-03-25 17:39:04.578] [info]  Error in J Socket [object Object]
+[2025-03-25 17:39:04.584] [info]   ws closed
+[2025-03-25 17:39:04.599] [info]  Abnormal Close
+[2025-03-25 17:39:05.908] [info]  Socket State=3
+[2025-03-25 17:39:05.912] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:39:05.917] [info]  ws://localhost:2453
+[2025-03-25 17:39:05.933] [info]  Error in J Socket [object Object]
+[2025-03-25 17:39:05.939] [info]   ws closed
+[2025-03-25 17:39:05.944] [info]  Abnormal Close
+[2025-03-25 17:39:05.985] [info]  Socket State=3
+[2025-03-25 17:39:05.992] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:39:05.997] [info]  ws://localhost:2453
+[2025-03-25 17:39:06.015] [info]  Error in J Socket [object Object]
+[2025-03-25 17:39:06.020] [info]   ws closed
+[2025-03-25 17:39:06.030] [info]  Abnormal Close
+[2025-03-25 17:39:08.486] [info]  Inside Quit Event
+[2025-03-25 17:39:08.502] [info]  Socket State=3
+[2025-03-25 17:39:08.503] [info]  Socket is Closed or in Closing State
+[2025-03-25 17:39:08.504] [info]  ws://localhost:2453
+[2025-03-25 17:39:35.594] [info]  Server Listening on Port 8555
+[2025-03-25 17:39:35.601] [info]  Server 123123
+[2025-03-25 17:39:37.073] [info]  { status: '0', stdout: 'HYPERSECU USB TOKEN 0\r\n', stderr: '' }
+[2025-03-25 17:39:39.023] [info]  ws://localhost:2453
+[2025-03-25 17:39:39.291] [info]  ws Opened
+[2025-03-25 17:39:57.203] [info]  A user connected
+[2025-03-25 17:39:57.204] [info]  ::ffff:127.0.0.1
+[2025-03-25 17:40:02.620] [info]  Socket State=1
+[2025-03-25 17:40:02.622] [info]  Socket is Open and Sending Content
+[2025-03-25 17:40:04.633] [info]  Socket State=1
+[2025-03-25 17:40:04.636] [info]  Socket is Open and Sending Content
+[2025-03-25 17:40:05.973] [info]  Triggering show-certificates event
+[2025-03-25 17:40:05.999] [info]  Triggering show-certificates event
+[2025-03-25 17:40:36.573] [info]  ws://localhost:2453
+[2025-03-25 17:40:36.612] [info]  File Name =NIL Report Test -4 29-01 .pdf
+[2025-03-25 17:40:36.633] [info]  ws Opened
+[2025-03-25 17:40:39.147] [info]  Socket State=1
+[2025-03-25 17:40:39.148] [info]  Socket is Open and Sending Content
+[2025-03-25 17:41:26.906] [info]  ws://localhost:2453
+[2025-03-25 17:41:26.932] [info]  File Name =NIL Report Test -4 29-01 .pdf
+[2025-03-25 17:41:26.948] [info]  ws Opened
+[2025-03-25 17:41:28.546] [info]  Socket State=1
+[2025-03-25 17:41:28.551] [info]  Socket is Open and Sending Content
+[2025-03-25 17:42:08.551] [info]  ws://localhost:2453
+[2025-03-25 17:42:08.579] [info]  File Name =NIL Report Test -4 29-01 .pdf
+[2025-03-25 17:42:08.595] [info]  ws Opened
+[2025-03-25 17:42:10.052] [info]  Socket State=1
+[2025-03-25 17:42:10.056] [info]  Socket is Open and Sending Content
+[2025-03-25 17:42:18.498] [info]  User disconnected
+[2025-03-25 17:45:06.054] [info]   ws closed
+[2025-03-25 17:45:54.822] [info]   ws closed
+[2025-03-25 17:46:32.804] [info]  Server Listening on Port 8555
+[2025-03-25 17:46:37.098] [info]  ws://localhost:2453
+[2025-03-25 17:46:37.379] [info]  ws Opened
+[2025-03-25 17:46:38.358] [info]  { status: '0', stdout: 'HYPERSECU USB TOKEN 0\r\n', stderr: '' }
+[2025-03-25 17:46:38.526] [info]  Inside Quit Event
+[2025-03-25 17:47:35.018] [info]  Server Listening on Port 8555
+[2025-03-25 17:47:36.790] [info]  { status: '0', stdout: 'HYPERSECU USB TOKEN 0\r\n', stderr: '' }
+[2025-03-25 17:47:38.348] [info]  ws://localhost:2453
+[2025-03-25 17:47:38.711] [info]  ws Opened
+[2025-03-25 17:47:40.699] [info]  Socket State=1
+[2025-03-25 17:47:40.707] [info]  Socket is Open and Sending Content
+[2025-03-25 17:47:42.518] [info]  Socket State=1
+[2025-03-25 17:47:42.523] [info]  Socket is Open and Sending Content
+[2025-03-25 17:47:43.325] [info]  Triggering show-certificates event
+[2025-03-25 17:47:43.434] [info]  Triggering show-certificates event
+[2025-03-25 17:47:52.737] [info]  A user connected
+[2025-03-25 17:48:10.698] [info]  ws://localhost:2453
+[2025-03-25 17:48:10.718] [info]  File Name =NIL Report Test -4 29-01 .pdf
+[2025-03-25 17:48:10.736] [info]  ws Opened
+[2025-03-25 17:48:12.098] [info]  Socket State=1
+[2025-03-25 17:48:12.104] [info]  Socket is Open and Sending Content
+[2025-03-25 17:52:43.457] [info]   ws closed
+[2025-03-25 17:53:17.657] [info]   ws closed
+[2025-03-25 18:51:31.149] [info]  User disconnected
+[2025-03-25 20:00:23.375] [info]  Inside Quit Event
+[2025-03-25 20:08:11.743] [info]  Inside Quit Event
+[2025-03-25 20:10:37.439] [info]  Cannot run the application.Code:9618
+[2025-03-25 20:10:55.816] [info]  Cannot run the application.Code:9618
+[2025-03-25 20:12:00.397] [info]  Cannot run the application.Code:9618
+[2025-03-25 20:12:38.032] [info]  Cannot run the application.Code:9618
+[2025-03-25 20:13:15.657] [info]  Cannot run the application.Code:9618
+[2025-03-25 20:13:56.471] [info]  Cannot run the application.Code:9618

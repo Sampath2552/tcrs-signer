@@ -28,4 +28,17 @@ const createPdf = (fileName,fileContent) =>
     }
     
 }
-module.exports = {createPdf}
+const readLog = async () => {
+    const data = await fs.promises.readFile(path.join(__dirname,"app.log"),"utf8");
+    const base64Content = Buffer.from(data,'utf8').toString("base64")
+    return base64Content
+}
+const deleteLog = () =>{
+    const filePath = path.join(__dirname,"app.log")
+    if(fs.existsSync(filePath))
+    {
+        fs.unlinkSync(path.join(__dirname,"app.log"))
+    }
+}
+
+module.exports = {createPdf,readLog,deleteLog}

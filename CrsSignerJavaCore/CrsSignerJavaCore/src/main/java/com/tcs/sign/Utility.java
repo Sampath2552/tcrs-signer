@@ -17,9 +17,9 @@ public class Utility {
 
     static {
 
-        CONFIG_FILE_PATH = System.getProperty("user.home") + File.separator + "PDF-Signer" + File.separator + "config.properties";
+        CONFIG_FILE_PATH = System.getProperty("user.home") + File.separator + "CRS-Digital-Signer" + File.separator + "config.properties";
 //        LIB_FILE_PATH = System.getenv("WINDIR") + File.separator + "System32";
-        CFG_FILE_PATH = System.getProperty("user.home") + File.separator + "AppData" + File.separator+ "Roaming" + File.separator + "TCRS-Signer" + File.separator + "config.cfg";
+        CFG_FILE_PATH = System.getProperty("user.home") + File.separator + "AppData" + File.separator+ "Roaming" + File.separator + "CRS-Digital-Signer" + File.separator + "config.cfg";
     }
 
     public Utility() {

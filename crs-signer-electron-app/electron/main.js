@@ -8,18 +8,13 @@ const tokencaller = require("./tokendetector")
 const configUpdater = require("./configupdater")
 const tokenverifer = require("./tokenverifier")
 const {WebSocket}= require("ws");
-
 const express = require('express')
 const cors = require('cors')
 const http = require('http');
 const socketIo = require('socket.io');
 const { dialog } = require("electron");
-const {createPdf} = require("./pdfwriter")
-const {EventEmitter} = require("events");
-const { json } = require("stream/consumers");
-
-const {signingStatusMessage,certificateExtractionMessages} = require("./messages")
-
+const {createPdf,readLog,deleteLog} = require("./pdfwriter")
+const {signingStatusMessage,certificateExtractionMessages, paths, localEnv, buildEnv} = require("./messages")
 const expressApp = express()
 expressApp.use(cors());
 expressApp.use(express.json({ limit: '50mb'}));
@@ -30,14 +25,18 @@ let userDir = os.homedir().split("\\");
 let userCompleteId = userDir[userDir.length - 1]
 let userId = userCompleteId.replace("tcs",'').replace("v",'')
 let fileName=''
+const log = require("electron-log/main")
 //let devFlag= false
+log.initialize()
+log.transports.file.resolvePathFn = ()=> path.join(__dirname,"app.log")
 let window
-
-
+const validationURL = paths.validationURLs[buildEnv]+"/Server/common/checkSigner"
 let signedReportsList = []
 const io = socketIo(server,{maxHttpBufferSize:"10mb",cors:{
-  origin:"*",
+  origin:["https://localhost:3000","https://crsdev.info.sbi","https://crsuat.info.sbi","https://sbicrs.info.sbi","https://crs.sbi"],
+  methods:["GET","POST"]
 }})
+
 const getIpAddress = ()=>{
     const networkInterfaces = os.networkInterfaces()
     for(const interfaceName in networkInterfaces)
@@ -53,35 +52,29 @@ const getIpAddress = ()=>{
     return "invalid"
 }
 io.on('connection', (socket) => {
-  console.log('A user connected');
-  const clientIpAddress = socket.handshake.address
-    console.log(clientIpAddress)
+  log.info('CRS User trying to connect');
+
   socket.on('userverification',(msg)=>{
 
     let crsLoggedInUserId = JSON.parse(msg).userId
     let bPF = JSON.parse(msg).bPF
 
       let ipAddress = getIpAddress()
-      let successObj = {success:false,localUserId:userId,bPF:bPF,ipAddress}
+      let successObj = {success:true,localUserId:userId,bPF:bPF,ipAddress}
 
 
-    if(userId===crsLoggedInUserId)
-    {
+      if (userId === crsLoggedInUserId || bPF) {
 
-      window.webContents.send('crs-connected')
+          window.webContents.send('crs-connected')
+          log.info('CRS User connected');
 
-      
-    }
-    else if(bPF)
-    {
-        window.webContents.send('crs-connected')
-    }
-    else
-    { 
-      
-      window.webContents.send("invalid-user",crsLoggedInUserId)
-    }
-    socket.emit('verification-result',JSON.stringify(successObj))
+      } else {
+
+          window.webContents.send("invalid-user", crsLoggedInUserId)
+          successObj.success = false
+          log.info('Unauthorized User - Access Denied');
+      }
+      socket.emit('verification-result',JSON.stringify(successObj))
   })
   socket.on('message', (msg) => {
 
@@ -96,7 +89,7 @@ io.on('connection', (socket) => {
 
           fileName = JSON.parse(msg).fileName
       
-          console.log("File Name ="+fileName)
+          log.info("Report Name  ="+fileName)
           window.webContents.send('render-pdf',JSON.parse(msg))
 
 
@@ -104,14 +97,15 @@ io.on('connection', (socket) => {
       else
       {
         window.webContents.send('wrong-user',crsLoggedInUserId)
+          log.info('Unauthorized User - Access Denied');
       }
      
     // Broadcast the message to all clients
   });
   socket.on('multisign',(msg)=>{
-    //console.log(msg)
+    //log.info(msg)
       let reportsMsg = JSON.parse(msg)
-      // console.log(reportsMsg.reports)
+      // log.info(reportsMsg.reports)
       let userId = reportsMsg.userId
       
       let role = reportsMsg.role
@@ -125,28 +119,23 @@ io.on('connection', (socket) => {
         window.webContents.send("show-reportlist",JSON.stringify(reportsMsg.reports))
         reportsMsg.reports.forEach((report)=>{
           let objToSend = {
-            userId,
-            role,
-            multiSignFlag:"true",
-            flagForSigning:"1",
-            dllSigningFlag:"false",
-            fileName: report.fileName,
-            data: report.data,
-            alias:"ANIL BABU KAYALORATH",
-            reportId: report.reportId
           }
           con.socket.send(JSON.stringify(objToSend))
         })
       }
-    //  console.log("Signed Reports List = "+signedReportsList)
+    //  log.info("Signed Reports List = "+signedReportsList)
   })
   socket.on('acknowledgement',()=>{
       window.webContents.send("acknowledgement-received")
+      log.info("Signed PDF received by CRS")
   })
   socket.on('disconnect', () => {
-      console.log('User disconnected');
+      log.info('User disconnected');
       window.webContents.send('crs-disconnected')
   });
+  socket.on('log-acknowledgement',()=>{
+      deleteLog()
+  })
 });
 
 const tokens=["eMudhra","SafeNet","Gemalto 32 Bit","Gemalto 64 Bit","ePass","SafeSign","Trust Key","Belgium eiD MiddleWare","Aladin eToken","Safe net I key","StarKey","Watchdata PROXkey","mToken"
@@ -156,16 +145,20 @@ const dllPaths=["eTPKCS11.dll","eTPKCS11.dll","IDPrimePKCS11.dll","IDPrimePKCS11
    ,"eps2003csp11v2.dll"
   ]
 const DLL_CONSTANT_PATH = "C:\\Windows\\System32\\"
-
+var sendLogToCrs;
 
 let con = {};
+const getTimeStamp = ()=>{
+    const currentDate = new Date();
+    return currentDate.toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})
+}
 const initializeSocket = () => {
     let port="2453"
     let protocol ="ws"
     let ip="localhost";
 
     let wrl = protocol +"://"+ip+":"+port
-    console.log(wrl)
+    log.info(wrl)
     try{
       let ws;
       try{
@@ -173,15 +166,15 @@ const initializeSocket = () => {
       }
       catch(err)
       {
-        console.log("Inside Error Statement")
+        log.info("Couldn't initiate Session")
       }
       ws.onopen = function () {
-        console.log('ws Opened');
+        log.info('Session Started');
         window.webContents.send("java-connected")
       };
       ws.onerror = function (error) {
-        console.log("Error in J Socket "+(error));
-        // console.error("Error line ="+error)
+        log.info("Error in Session "+(error));
+        // log.error("Error line ="+error)
         //javacaller()
       };
       // Response after sign 
@@ -196,15 +189,16 @@ const initializeSocket = () => {
         }
         else
         {
-         // console.log(socketResult)
+         // log.info(socketResult)
           if(socketResult.certs)
           {
-           console.log("Triggering show-certificates event")
+
              window.webContents.send('show-certificates',e.data)
 
           }
           else if(socketResult.fromDll)
           {
+
               window.webContents.send('show-dll-certificate',e.data)
           }
           else if(socketResult.status)
@@ -216,10 +210,22 @@ const initializeSocket = () => {
               window.webContents.send('sending-to-socket')
               let pdfName = fileName || "sample"
               createPdf(pdfName,socketResult.signedData)
-    
-             
-            
+            log.info("Sending Data to CRS")
             io.emit('signed-data',e.data)
+            if(sendLogToCrs){
+                clearTimeout(sendLogToCrs)
+            }
+            sendLogToCrs =  setTimeout(async () => {
+                const log64Data = await readLog();
+                const ipAddress = getIpAddress()
+                const timeStamp = getTimeStamp()
+                const dataToSend = {
+                    ipAddress,
+                    timeStamp,
+                    log64Data
+                }
+                io.emit('log-data',dataToSend);
+            },20000)
             }
             else if(socketResult.status==="111" && socketResult.multiSignFlag==="true")
             {
@@ -230,7 +236,7 @@ const initializeSocket = () => {
             { 
               
               let msgObj = signingStatusMessage[socketResult.status]
-              //console.log(msgObj)
+              //log.info(msgObj)
               window.webContents.send('show-sign-status',msgObj)
               io.emit('sign-error',{error:true,...msgObj})
             }
@@ -245,10 +251,10 @@ const initializeSocket = () => {
       };
   
       ws.onclose = function (event) {
-        console.log(" ws closed");
+        log.info(" Session closed");
         if(!event.wasClean && event.code===1006)
         {
-            console.log("Abnormal Close")
+            log.info("Abnormal Close")
             javacaller()
         }
         window.webContents.send("java-disconnected")
@@ -257,7 +263,7 @@ const initializeSocket = () => {
     }
     catch(err)
     {
-      console.log("Inside error log");
+      log.info("Session error");
       
     }
   
@@ -265,7 +271,7 @@ const initializeSocket = () => {
   }
 const openCrs= ()=>{
     //const externalUrl = devFlag===true ? "https://crsdev.info.sbi" : "https://sbicrs.info.sbi/CRS/"
-    shell.openExternal("https://crsuat.info.sbi").then(r => (console.log("Browser Open")))
+    shell.openExternal("https://crsuat.info.sbi").then(r => (log.info("Browser Open")))
 }
 const renderTokens = (flag) =>{
 
@@ -273,12 +279,12 @@ const renderTokens = (flag) =>{
   if(flag===1)
   {
     tokencaller().then(tokenResponse=>{
-      console.log(tokenResponse)
+      log.info(tokenResponse)
       setTimeout(()=>{
         window.webContents.send('render-tokens',tokenResponse)
       },2000)
     }).catch(err=>{
-      console.log(err)
+      log.info(err)
     })
 
   }
@@ -286,12 +292,13 @@ const renderTokens = (flag) =>{
   {
    
     tokencaller().then(tokenResponse=>{
-      console.log(tokenResponse)
+      log.info(tokenResponse)
       
         window.webContents.send('render-tokens',tokenResponse)
       
     }).catch(err=>{
-      console.log(err)
+      log.info("Issue in fetching tokens")
+        log.error(err)
     })
     
   }
@@ -325,7 +332,7 @@ const openFilePicker = async ()=>{
 })
   if(!result.canceled)
   {
-    console.log(result.filePaths[0])
+   // log.info(result.filePaths[0])
     window.webContents.send('selected-file',result.filePaths[0])
   }
   
@@ -335,7 +342,7 @@ const
     createWindow =  ()=>{
     
     window = new BrowserWindow({
-        title:"TCS Digital Signer",
+        title:"CRS Digital Signer",
         width:1440,
         height:880,
         icon:"./applogo.ico",
@@ -347,7 +354,9 @@ const
     })
     
     window.maximizable=false
+    const feUrl = paths.build[localEnv]
     const startUrl = url.format({
+
         pathname: path.join(__dirname, '../build/index.html'),
         protocol: 'file',
       });
@@ -368,8 +377,8 @@ const
       }
       catch(err)
       {
-        console.log(err)
-        console.log("Trying to close")
+        log.info(err)
+        log.info("Trying to close the application")
       }
      
       return window
@@ -396,27 +405,27 @@ const checkToken = (event,credentials) =>{
       window.webContents.send('show-configuration-status',popUpDetails)
     
   }).catch(err=>{
-    console.log(err)
+    log.info(err)
   })
   
 }
 
 const sendToSocket = (content) =>{
   if(con.socket){
-      console.log("Socket State="+con.socket.readyState)
+      log.info("Session  State="+con.socket.readyState)
     if(con.socket.readyState === WebSocket.OPEN)
-      { console.log("Socket is Open and Sending Content")
+      { log.info("Session is Open and Sending Content")
          
           con.socket.send(content)
       }
     else if (con.socket.readyState === WebSocket.CONNECTING)
-    { console.log("Socket is in Connection State")
+    { log.info("Session is in Connected State")
       setTimeout(()=>{
           sendToSocket(content)
       },3000)
     }
     else
-    { console.log("Socket is Closed or in Closing State")
+    { log.info("Session is Closed or in Closing State")
       initializeSocket()
       setTimeout(()=>{
         sendToSocket(content)
@@ -435,7 +444,7 @@ const sendContent = (event,content)=>{
         
         //
         //
-        // console.log(`fileName in node = ${fileName} file name node got = ${content}`)
+        // log.info(`fileName in node = ${fileName} file name node got = ${content}`)
         
        sendToSocket(content)
 
@@ -451,7 +460,7 @@ const sendClose=()=>{
     io.emit('render-close',{error:false})
 }
 const sendQuitEvent = ()=>{
-  console.log("Inside Quit Event")
+  log.info("Inside Quit Event")
   const quitEventData = {flagForSigning:"0"}
   if(con!=null)
   {
@@ -462,14 +471,14 @@ const sendQuitEvent = ()=>{
 const configureNewToken= async (event,newTokenDetails)=>
 {
   //const name = "token"
-    console.log("Sending for DLL Cert Extraction")
+    log.info("Sending for DLL Cert Extraction")
   const tokenPath=newTokenDetails.selectedFilePath
   const slotIndex = newTokenDetails.slotIndex
-  console.log(newTokenDetails)
+ // log.info(newTokenDetails)
   const fileWritingStatus =await configUpdater(`name=crs\nlibrary=${tokenPath}\nslot=${slotIndex}`)
   if(fileWritingStatus)
   {
-      console.log({...newTokenDetails,dllSigningFlag:"true",flagForSigning:"2"})
+     // log.info({...newTokenDetails,dllSigningFlag:"true",flagForSigning:"2"})
     sendToSocket(JSON.stringify({...newTokenDetails,flagForSigning:"2",dllSigningFlag: "true"}))
   }
 }
@@ -495,6 +504,7 @@ const configChanger= (event,details) =>{
   }
   if(index==-1)
   {
+      log.info("Invalid Token Configuration")
     window.webContents.send('config-invalid')
   }
   else
@@ -517,52 +527,115 @@ app.on('win-all-closed',()=>{
 })
 // This will make sure only one instance of the app can run at a time
 // if (!app.requestSingleInstanceLock()) {
-//   console.log("Another instance is already running. Exiting...");
+//   log.info("Another instance is already running. Exiting...");
 //   app.quit();  // If another instance is trying to start, quit the app
 //   process.exit(0);
 // }
 app.on('second-instance', (event, commandLine, workingDirectory) => {
   // Quit the app if another instance tries to launch
-  console.log("Another instance is trying to launch. Exiting...");
+  log.info("Another instance is trying to launch. Exiting...");
   app.quit();
 });
-app.whenReady().then(()=>{
-    // ipcMain.on('start-Jar',startJar)
-    ipcMain.on('sign-content',sendContent)
-    ipcMain.on('render-tokens',renderTokens)
-    ipcMain.on('change-config',configChanger)
-    ipcMain.on('check-token',checkToken)
-    ipcMain.on('configure-newtoken',configureNewToken)
-    ipcMain.on('open-filepicker',openFilePicker)
-    ipcMain.on('get-certificates',getCertificates)
-    ipcMain.on('open-crs',openCrs)
-    ipcMain.on('send-close',sendClose)
-    ipcMain.on('not-configured',sendCertificateNotConfigured)
-  //   globalShortcut.register('Control+Shift+I', () => {
-  //     // When the user presses Ctrl + Shift + I, this function will get called
-  //     // You can modify this function to do other things, but if you just want
-  //     // to disable the shortcut, you can just return false
-  //     return true;
-  // });
-  // globalShortcut.register('Control+R', () => {return false;});
+app.whenReady().then(async () => {
+        // ipcMain.on('start-Jar',startJar)
+        ipcMain.on('sign-content', sendContent)
+        ipcMain.on('render-tokens', renderTokens)
+        ipcMain.on('change-config', configChanger)
+        ipcMain.on('check-token', checkToken)
+        ipcMain.on('configure-newtoken', configureNewToken)
+        ipcMain.on('open-filepicker', openFilePicker)
+        ipcMain.on('get-certificates', getCertificates)
+        ipcMain.on('open-crs', openCrs)
+        ipcMain.on('send-close', sendClose)
+        ipcMain.on('not-configured', sendCertificateNotConfigured)
+          globalShortcut.register('Control+Shift+I', () => {
+            // When the user presses Ctrl + Shift + I, this function will get called
+            // You can modify this function to do other things, but if you just want
+            // to disable the shortcut, you can just return false
+            return false;
+        });
+         globalShortcut.register('Control+R', () => {return false;});
 
-  globalShortcut.register('Control+Shift+R',()=>{return false;})
-    createWindow()
-}
+        globalShortcut.register('Control+Shift+R', () => {
+            return false;
+        })
 
-    )
+       try{
+            console.log(validationURL)
+           const validationResponseData = await fetch(validationURL,{
+               method:"POST",
+               body: JSON.stringify({
+                   userId : userId,
+
+               }),
+               headers:{
+                   "Content-Type":"application/json"
+               }
+           })
+           const validationResponse = await validationResponseData.json()
+           if(validationResponse.result && validationResponse.result.status===true)
+           {
+               if(validationResponse.result.validity===true)
+               {
+                   if(validationResponse.result.version==="1.0.0")
+                   {
+                       createWindow();
+                   }
+                   else{
+                       log.info("Wrong Version")
+                       log.info("Outdated Version:")
+                       const messageBoxOptions ={
+                           type:"error",
+                           title:"CRS Digital Signer",
+                           message:`You are currently using version 1.0.0 please update  to version ${validationResponse.result.version}.`
+                       }
+                       dialog.showMessageBoxSync(messageBoxOptions)
+                       app.exit(1)
+                   }
+
+               }
+               else{
+                   log.info("Unauthorized Access:")
+                   const messageBoxOptions ={
+                       type:"error",
+                       title:"CRS Digital Signer",
+                       message:"You are unauthorized to access this application."
+                   }
+                   dialog.showMessageBoxSync(messageBoxOptions)
+                   app.exit(1)
+               }
+           }
+           else{
+               log.info("Cannot run the application.Code:1970")
+               const messageBoxOptions ={
+                   type:"error",
+                   title:"CRS Digital Signer",
+                   message:"You are unauthorized to access this application. Code:1970"
+               }
+               dialog.showMessageBoxSync(messageBoxOptions)
+               app.exit(1)
+           }
+       }
+       catch(e)
+       {   log.info("Cannot run the application.Code:1971")
+           const messageBoxOptions ={
+               type:"error",
+               title:"CRS Digital Signer",
+               message:"You are unauthorized to access this application. Code:1971"
+           }
+           dialog.showMessageBoxSync(messageBoxOptions)
+           app.exit(1)
+
+       }
+
+    }
+  )
    
-// expressApp.post('/',(req,res)=>{
-//   console.log("Server Hit")
-//   console.log(req.body)
-//   initializeSocket()
-//   window.webContents.send('render-pdf',req.body)
-//   res.json({"status":"101"})
-// })
-// expressApp.listen(9652,()=>{console.log("Listening on Port 9652")})
+
 server.on('error',()=>{
   process.exit(0)
 })
 
 server.listen(8555,()=>{
-  console.log("Server Listening on Port 8555")})
+  console.log("Application running in the system ")
+})

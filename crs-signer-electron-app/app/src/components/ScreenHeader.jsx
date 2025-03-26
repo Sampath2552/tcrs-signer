@@ -27,7 +27,7 @@ function ScreenHeader({messageType}) {
     },
     "readyToSign":{
         heading:"Ready To Sign",
-        description:"The TCS Digital Signer is all set to digitally sign the files. The details of the configurations set are shown below and will be used for signing."
+        description:"The CRS Digital Signer is all set to digitally sign the files. The details of the configurations set are shown below and will be used for signing."
     }
 }
     useEffect(() => {

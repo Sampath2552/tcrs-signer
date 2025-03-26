@@ -50,8 +50,8 @@ import java.util.*;
 import java.util.List;
 
 public class TestSign {
-    private static final String CFG_FILE_PATH=System.getProperty("user.home") + File.separator + "AppData" +File.separator + "Roaming" + File.separator +"TCRS-Signer" + File.separator + "config.cfg";
-    private static final String TEMP_FILE_PATH = System.getProperty("user.home") + File.separator + "AppData" +File.separator + "Roaming" + File.separator +"TCRS-Signer"  + File.separator + "Temp" + File.separator + "Signed_Report.pdf";
+    private static final String CFG_FILE_PATH=System.getProperty("user.home") + File.separator + "AppData" +File.separator + "Roaming" + File.separator +"CRS-Digital-Signer" + File.separator + "config.cfg";
+    private static final String TEMP_FILE_PATH = System.getProperty("user.home") + File.separator + "AppData" +File.separator + "Roaming" + File.separator +"CRS-Digital-Signer"  + File.separator + "Temp" + File.separator + "Signed_Report.pdf";
     public static int checkPassword(String pass) throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
         String configlocation =    CFG_FILE_PATH;
         int flag=0;

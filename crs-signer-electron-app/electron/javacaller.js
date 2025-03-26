@@ -1,14 +1,13 @@
 const {exec} = require("child_process")
+const {paths,localEnv} = require("./messages")
 
-//Local
-//const url = "./electron/Tcrs.jar"
-//Build
-const url = "./resources/app/electron/Tcrs.jar"
+const url = paths.sessionPath[localEnv]
+
 
 
 let childProcess=null
 const checkProcess = ( pid)=>{
-    console.log("Checking Process with ID"+pid)
+
     try{process.kill(pid,0)
         return true;
     }
@@ -21,7 +20,7 @@ const checkProcess = ( pid)=>{
 
 
 const javacaller = () =>{
-    console.log("Function Triggered")
+
     if(childProcess)
     {
       if(checkProcess(childProcess.pid)){

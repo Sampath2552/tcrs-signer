@@ -2,10 +2,9 @@
 
 const {exec} = require("child_process")
 
-//Local
-const url = "./electron/Tcrs.jar"
-//Build
-//const url = "./resources/app/electron/Tcrs.jar"
+const {paths,localEnv} = require("./messages")
+
+const url = paths.sessionPath[localEnv]
 let tokencaller = ()=>{
     return new Promise((resolve,reject)=>{
         exec(`java -cp ${url} com.tcs.sign.TokenDetector`,(error, stdout, stderr)=>{

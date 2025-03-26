@@ -30,7 +30,7 @@ function SidePanel() {
                     gutterBottom
                     sx={{fontSize: "50ox",marginTop: '20px',marginBottom:'0px',marginLeft:'15px',marginRight:'0px'}}
                 >
-                    TCS Digital Signer
+                    CRS Digital Signer
 
                 </Typography>
             </Box>
@@ -38,7 +38,7 @@ function SidePanel() {
             <footer style={{ padding: 20}}>
                 <Box sx={{display: "flex", justifyContent: "space-between"}}>
                     <Typography>© tcs.com</Typography>
-                    <Typography>TCS Digital Signer v1.0.0</Typography>
+                    <Typography>CRS Digital Signer v1.0.0</Typography>
                 </Box>
                 <Typography sx={{textAlign: "center", color: "rgba(0,0,0,0.6)"}}>Licensed to State Bank Of India</Typography>
             </footer>

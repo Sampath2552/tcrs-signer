@@ -16,4 +16,22 @@ const certificateExtractionMessages= {
     '-1':{status:-1,header:"No Token",description:"Error verifying the Token. Please try again with the appropriate Token"},
     '-2':{status:-2, header:"Invalid DLL",description:"Please verify whether you have selected the correct dll. Verify whether the token dll is installed or not."}
 }
-module.exports={signingStatusMessage,certificateExtractionMessages}
+const paths={
+    sessionPath:{
+        "local":"./electron/Tcrs.jar",
+        "build":"./resources/app/electron/Tcrs.jar"
+    },
+    build:{
+        "local":"../app/build/index.html",
+        "build":"../build/index.html"
+    },
+    validationURLs:{
+        "l":"http://10.0.26.102:9000",
+        "d":"https://crsdev.info.sbi",
+        "u":"https://crsuat.info.sbi",
+        "p":"https://crs.sbi"
+    }
+}
+const buildEnv="u"
+const localEnv = "build"
+module.exports={signingStatusMessage,certificateExtractionMessages,paths,buildEnv,localEnv}
