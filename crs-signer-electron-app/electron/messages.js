@@ -32,6 +32,6 @@ const paths={
         "p":"https://crs.sbi"
     }
 }
-const buildEnv="u"
+const buildEnv="p"
 const localEnv = "build"
 module.exports={signingStatusMessage,certificateExtractionMessages,paths,buildEnv,localEnv}

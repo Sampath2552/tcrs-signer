@@ -38,7 +38,7 @@ public class ExtractBookmarks {
                     PDPageDestination pageDestination = (PDPageDestination) destination;
                     PDPageXYZDestination pageXYZDestination = (PDPageXYZDestination) pageDestination;
 
-                    BookMark bookMark = new BookMark(bookmarkString,  pageXYZDestination.getTop(),pageXYZDestination.getLeft());
+                    BookMark bookMark = new BookMark(bookmarkString,  pageXYZDestination.getTop(),pageXYZDestination.getLeft(), 0);
 
                     bookmarks.add(bookMark);
                 }
@@ -71,8 +71,13 @@ public class ExtractBookmarks {
                     if (destination instanceof PDPageDestination){
                         PDPageDestination pageDestination = (PDPageDestination) destination;
                         PDPageXYZDestination pageXYZDestination = (PDPageXYZDestination) pageDestination;
-
-                         bookMark = new BookMark(bookmarkString,  pageXYZDestination.getTop(),pageXYZDestination.getLeft());
+                        PDPageDestination currentItemDestination = (PDPageDestination) currentItem.getDestination();
+                        int pageNumber = currentItemDestination.retrievePageNumber();
+                        if(pageNumber == -1 )
+                        {
+                            pageNumber =0;
+                        }
+                         bookMark = new BookMark(bookmarkString,  pageXYZDestination.getTop(),pageXYZDestination.getLeft(),pageNumber);
                         System.out.println("Inside Extract Bookmark function");
                          System.out.println(bookMark.toString());
 
@@ -111,8 +116,15 @@ public class ExtractBookmarks {
                         PDPageDestination pageDestination = (PDPageDestination) destination;
                         PDPageXYZDestination pageXYZDestination = (PDPageXYZDestination) pageDestination;
 
-                        bookMark = new BookMark(bookmarkString,  pageXYZDestination.getTop(),pageXYZDestination.getLeft());
-
+                        PDPageDestination currentItemDestination = (PDPageDestination) currentItem.getDestination();
+                        int pageNumber = currentItemDestination.retrievePageNumber();
+                        System.out.println("Page Number"+pageNumber);
+                        if(pageNumber == -1 )
+                        {
+                            pageNumber =0;
+                        }
+                        bookMark = new BookMark(bookmarkString,  pageXYZDestination.getTop(),pageXYZDestination.getLeft(),pageNumber);
+                        System.out.println("Page Number extracted from bookmark object"+bookMark.getPageNumber());
 
                     }
                     break;

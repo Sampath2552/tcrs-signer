@@ -5,11 +5,12 @@ public class BookMark
     private String bookmarkName;
     private int x;
     private int y;
-
-    public BookMark(String bookmarkName, int x, int y) {
+    private int pageNumber;
+    public BookMark(String bookmarkName, int x, int y, int pageNumber) {
         this.bookmarkName = bookmarkName;
         this.x = x;
         this.y = y;
+        this.pageNumber = pageNumber;
     }
 
     public String getBookmarkName() {
@@ -34,6 +35,14 @@ public class BookMark
 
     public void setY(int y) {
         this.y = y;
+    }
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(int pageNumber) {
+        this.pageNumber = pageNumber;
     }
 
     @Override
